@@ -1,0 +1,131 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>net.imprex</groupId>
+	<artifactId>zip</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+
+	<name>ZeroInventoryProblems</name>
+	<url>https://github.com/Imprex-Development/zero-inventory-problems</url>
+	<description>Simple Backpack plugin</description>
+	<inceptionYear>2023</inceptionYear>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/Imprex-Development/zero-inventory-problems/issues</url>
+	</issueManagement>
+
+	<properties>
+		<revision>1.0.0-b0</revision>
+
+		<dependency.netty.version>4.1.68.Final</dependency.netty.version>
+		<dependency.bukkit.version>1.19-R0.1-SNAPSHOT</dependency.bukkit.version>
+		<dependency.authlib.version>1.5.25</dependency.authlib.version>
+		<dependency.bstats.version>3.0.0</dependency.bstats.version>
+
+		<plugin.compile.version>3.10.1</plugin.compile.version>
+		<plugin.shade.version>3.4.0</plugin.shade.version>
+		<plugin.flatten.version>1.2.7</plugin.flatten.version>
+		<plugin.specialsource.version>1.2.4</plugin.specialsource.version>
+
+		<maven.compiler.source>16</maven.compiler.source>
+		<maven.compiler.target>16</maven.compiler.target>
+		<java.version>16</java.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>spigot-repo</id>
+			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>nms-repo</id>
+			<url>https://repo.codemc.io/repository/nms/</url>
+		</repository>
+	</repositories>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${plugin.compile.version}</version>
+				<configuration>
+					<release>16</release>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>${plugin.shade.version}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<relocations>
+						<relocation>
+							<pattern>org.bstats</pattern>
+							<shadedPattern>net.imprex.zip.metrics</shadedPattern>
+						</relocation>
+					</relocations>
+					<filters>
+						<filter>
+							<artifact>*:*</artifact>
+							<excludes>
+								<exclude>META-INF/*.SF</exclude>
+								<exclude>META-INF/*.DSA</exclude>
+								<exclude>META-INF/*.RSA</exclude>
+							</excludes>
+						</filter>
+					</filters>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>${plugin.flatten.version}</version>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>package</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>clean</flattenMode>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<modules>
+		<module>zip-plugin</module>
+		<module>zip-api</module>
+		<module>zip-nms</module>
+		<module>zip-common</module>
+	</modules>
+</project>

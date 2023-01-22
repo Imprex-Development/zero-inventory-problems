@@ -1,0 +1,27 @@
+api-version: 1.19
+
+name: ${project.parent.name}
+version: ${project.version}
+description: '${project.parent.description}'
+
+main: net.imprex.zip.BackpackPlugin
+
+author: NgLoader
+
+commands:
+  zeroinventoryproblems:
+    aliases: [zeroinventoryproblem, zip]
+
+permissions:
+  zeroinventoryproblems.*:
+    default: false
+    description: Access to all of Zero Inventory Problems features
+  zeroinventoryproblems.notification:
+    default: op
+    description: Access to update notifications
+  zeroinventoryproblems.pickup:
+    default: true
+    description: Pickup unaccessable items
+  zeroinventoryproblems.link:
+    default: true
+    description: Link your empty backpack to another one
