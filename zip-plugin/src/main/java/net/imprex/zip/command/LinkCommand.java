@@ -56,7 +56,7 @@ public class LinkCommand extends BackpackSubCommand {
 			return;
 		}
 
-		if (backpack.hasUnuseableItem()) {
+		if (backpack.hasUnuseableContent()) {
 			this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
 			return;
 		} else if (backpack.hasContent()) {

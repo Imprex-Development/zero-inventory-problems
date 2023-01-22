@@ -66,10 +66,10 @@ public class GiveCommand extends BackpackSubCommand {
 	@Override
 	public void onTabComplete(CommandSender sender, String[] args, List<String> result) {
 		if (args.length == 0) {
-			this.backpackRegistry.getTypes().forEach(type -> result.add(type.getUniqueName()));
+			this.backpackRegistry.getType().forEach(type -> result.add(type.getUniqueName()));
 		} else if (args.length == 1) {
 			String search = args[0].toLowerCase(Locale.ROOT);
-			this.backpackRegistry.getTypes().stream()
+			this.backpackRegistry.getType().stream()
 				.filter(type -> type.getUniqueName().startsWith(search))
 				.forEach(type -> result.add(type.getUniqueName()));
 		} else if (args.length == 2) {

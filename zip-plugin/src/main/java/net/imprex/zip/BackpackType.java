@@ -4,10 +4,11 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
+import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.config.BackpackTypeConfig;
 import net.imprex.zip.util.ItemFactory;
 
-public class BackpackType {
+public class BackpackType implements ZIPBackpackType {
 
 	private final BackpackPlugin plugin;
 	private final BackpackTypeConfig config;
@@ -29,6 +30,7 @@ public class BackpackType {
 		this.recipe = new BackpackRecipe(plugin, config, this.item);
 	}
 
+	@Override
 	public ItemStack createItem() {
 		ItemStack item = new ItemStack(this.item);
 		Backpack backpack = this.create();
@@ -36,26 +38,32 @@ public class BackpackType {
 		return item;
 	}
 
+	@Override
 	public Backpack create() {
 		return new Backpack(this.plugin, this);
 	}
 
+	@Override
 	public int getInventoryRows() {
 		return this.config.inventoryRows;
 	}
 
+	@Override
 	public String getUniqueName() {
 		return this.config.uniqueName;
 	}
 
+	@Override
 	public String getDisplayName() {
 		return this.config.displayName;
 	}
 
+	@Override
 	public ItemStack getItem() {
 		return this.item;
 	}
 
+	@Override
 	public BackpackRecipe getRecipe() {
 		return this.recipe;
 	}

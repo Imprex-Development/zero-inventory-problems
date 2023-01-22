@@ -28,12 +28,12 @@ public class PickupCommand extends BackpackSubCommand {
 			return;
 		}
 
-		if (!backpack.hasUnuseableItem()) {
+		if (!backpack.hasUnuseableContent()) {
 			this.messageConfig.send(player, MessageKey.YourBackpackHasNoUnusableItems);
 			return;
 		}
 
-		if (backpack.giveUnsueableItems(player)) {
+		if (backpack.giveUnsueableContent(player)) {
 			this.messageConfig.send(player, MessageKey.YouReceivedAllUnusableItems);
 		} else {
 			this.messageConfig.send(player, MessageKey.YouNeedMoreSpaceInYourInventory);

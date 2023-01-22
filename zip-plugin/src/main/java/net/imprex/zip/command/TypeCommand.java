@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 
 import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.BackpackRegistry;
-import net.imprex.zip.BackpackType;
+import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.config.MessageKey;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -24,7 +24,7 @@ public class TypeCommand extends BackpackSubCommand {
 		message.addExtra(BackpackCommand.LINE_SEPARATOR);
 
 		BackpackRegistry backpackRegistry = plugin.getBackpackRegistry();
-		for (BackpackType backpackType : backpackRegistry.getTypes()) {
+		for (ZIPBackpackType backpackType : backpackRegistry.getType()) {
 			TextComponent component = new TextComponent(this.messageConfig.getWithoutPrefix(MessageKey.CommandTypeContent, backpackType.getUniqueName()));
 			component.addExtra(" ");
 

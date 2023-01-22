@@ -12,13 +12,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.imprex.zip.api.ZIPService;
 import net.imprex.zip.command.BackpackCommand;
 import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.util.ZIPLogger;
 
-public class BackpackPlugin extends JavaPlugin implements Listener {
+public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 
 	private NamespacedKey backpackIdentifierKey;
 	private NamespacedKey backpackStorageKey;
@@ -49,13 +51,14 @@ public class BackpackPlugin extends JavaPlugin implements Listener {
 			this.backpackRegistry.register();
 			this.backpackHandler.loadBackpacks();
 
-			getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
-
 			this.updateSystem = new UpdateSystem(this);
 
 			new MetricsSystem(this);
 
+			this.getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
+
 			Bukkit.getPluginManager().registerEvents(new BackpackListener(this), this);
+			Bukkit.getServicesManager().register(ZIPService.class, this, this, ServicePriority.Normal);
 		} catch (Exception e) {
 			ZIPLogger.error("An error occured while enabling plugin", e);
 
@@ -116,10 +119,12 @@ public class BackpackPlugin extends JavaPlugin implements Listener {
 		return this.updateSystem;
 	}
 
+	@Override
 	public BackpackHandler getBackpackHandler() {
 		return this.backpackHandler;
 	}
 
+	@Override
 	public BackpackRegistry getBackpackRegistry() {
 		return this.backpackRegistry;
 	}

@@ -15,6 +15,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import net.imprex.zip.api.ZIPBackpackType;
+import net.imprex.zip.api.ZIPRecipe;
+
 public class BackpackListener implements Listener {
 
 	private final BackpackHandler backpackHandler;
@@ -30,8 +33,8 @@ public class BackpackListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		for (BackpackType backpackType : this.backpackRegistry.getTypes()) {
-			BackpackRecipe recipe = backpackType.getRecipe();
+		for (ZIPBackpackType backpackType : this.backpackRegistry.getType()) {
+			ZIPRecipe recipe = backpackType.getRecipe();
 			if (recipe.canDiscover()) {
 				player.discoverRecipe(recipe.getKey());
 			}
