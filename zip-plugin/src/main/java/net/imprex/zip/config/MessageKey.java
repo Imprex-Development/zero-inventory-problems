@@ -39,7 +39,8 @@ public enum MessageKey {
 	YouNeedToLinkABackpackFirst("youNeedToLinkABackpackFirst", "You need to link a backpack at first"),
 	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
-	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack");
+	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
+	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {
