@@ -1,6 +1,7 @@
 general:
   checkForUpdates: true
   verbose: false
+  locale: en_US
 type:
   big:
     uniqueName: 'big'
