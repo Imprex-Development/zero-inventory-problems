@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -12,6 +13,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import net.imprex.zip.api.ZIPBackpackType;
+import net.imprex.zip.api.ZIPRecipe;
 
 public class BackpackListener implements Listener {
 
@@ -28,8 +33,8 @@ public class BackpackListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		for (BackpackType backpackType : this.backpackRegistry.getTypes()) {
-			BackpackRecipe recipe = backpackType.getRecipe();
+		for (ZIPBackpackType backpackType : this.backpackRegistry.getType()) {
+			ZIPRecipe recipe = backpackType.getRecipe();
 			if (recipe.canDiscover()) {
 				player.discoverRecipe(recipe.getKey());
 			}
@@ -98,4 +103,17 @@ public class BackpackListener implements Listener {
 			event.setCancelled(true);
 		}
 	}
+
+	@EventHandler(ignoreCancelled = false)
+	public void onCraftItem(CraftItemEvent event) {
+		ItemStack item = event.getCurrentItem();
+		if (this.backpackHandler.isBackpack(item)) {
+			if (event.isShiftClick()) {
+				event.setCancelled(true);
+				return;
+			}
+
+			this.backpackHandler.getBackpack(item);
+		}
+	} 
 }

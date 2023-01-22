@@ -13,18 +13,21 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import net.imprex.zip.api.ZIPBackpack;
 import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
 
-public class Backpack {
+public class Backpack implements ZIPBackpack {
 
 	private final BackpackHandler backpackHandler;
 	private final NamespacedKey storageKey;
 	private final MessageConfig messageConfig;
 
 	private final UniqueId id;
+
+	private final String typeRaw;
 	private final BackpackType type;
 
 	private ItemStack[] content;
@@ -36,6 +39,7 @@ public class Backpack {
 		this.messageConfig = plugin.getBackpackConfig().message();
 		this.type = type;
 
+		this.typeRaw = type.getUniqueName();
 		this.id = UniqueId.get();
 
 		int rows = this.type.getInventoryRows();
@@ -53,8 +57,8 @@ public class Backpack {
 
 		this.id = UniqueId.fromByteArray(buffer.readByteArray());
 
-		String typeName = buffer.readString();
-		this.type = plugin.getBackpackRegistry().getTypeByName(typeName);
+		this.typeRaw = buffer.readString();
+		this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
 
 		byte[] contentAsByteArray = buffer.readByteArray();
 		ItemStack[] content = NmsInstance.binaryToItemStack(contentAsByteArray).toArray(ItemStack[]::new);
@@ -93,28 +97,34 @@ public class Backpack {
 		}
 
 		buffer.writeByteArray(this.id.toByteArray());
-		buffer.writeString(this.type.getUniqueName());
+		buffer.writeString(this.typeRaw);
 		buffer.writeByteArray(NmsInstance.itemstackToBinary(this.content));
 	}
 
+	@Override
 	public void save() {
 		this.backpackHandler.save(this);
 	}
 
+	@Override
 	public void open(Player player) {
 		Objects.nonNull(player);
 
 		if (this.inventory != null) {
 			player.openInventory(this.inventory);
 
-			if (this.hasUnuseableItem()) {
-				this.messageConfig.send(player, MessageKey.YouHaveUnuseableItemsUsePickup);
+			if (this.hasUnuseableContent()) {
+				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
 			}
 		} else {
-			player.sendMessage(this.messageConfig.get(MessageKey.AErrorOccured));
+			player.sendMessage(this.messageConfig.get(MessageKey.ThisBackpackNoLongerExist));
+			if (this.hasUnuseableContent()) {
+				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
+			}
 		}
 	}
 
+	@Override
 	public boolean applyOnItem(ItemStack item) {
 		if (item != null && item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
@@ -125,23 +135,28 @@ public class Backpack {
 		return false;
 	}
 
+	@Override
 	public boolean hasContent() {
-		for (int i = 0; i < this.inventory.getSize(); i++) {
-			ItemStack item = this.inventory.getItem(i);
-			if (item != null && !NmsInstance.isAir(item.getType())) {
-				return true;
+		if (this.inventory != null) {
+			for (int i = 0; i < this.inventory.getSize(); i++) {
+				ItemStack item = this.inventory.getItem(i);
+				if (item != null && !NmsInstance.isAir(item.getType())) {
+					return true;
+				}
 			}
 		}
-		return false;
+		return this.hasUnuseableContent();
 	}
 
-	public boolean hasUnuseableItem() {
-		int shadowContentSize = this.content.length;
-		if (this.inventory.getSize() >= shadowContentSize) {
+	@Override
+	public boolean hasUnuseableContent() {
+		int contentSize = this.content.length;
+		int inventorySize = this.inventory != null ? this.inventory.getSize() : 0;
+		if (inventorySize >= contentSize) {
 			return false;
 		}
 
-		for (int i = this.inventory.getSize(); i < shadowContentSize; i++) {
+		for (int i = inventorySize; i < contentSize; i++) {
 			ItemStack item = this.content[i];
 			if (item != null && item.getType() != Material.AIR) {
 				return true;
@@ -150,11 +165,13 @@ public class Backpack {
 		return false;
 	}
 
-	public boolean giveUnsueableItems(Player player) {
+	@Override
+	public boolean giveUnsueableContent(Player player) {
 		PlayerInventory inventory = player.getInventory();
 		boolean empty = true;
 
-		for (int i = this.inventory.getSize(); i < this.content.length; i++) {
+		int inventorySize = this.inventory != null ? this.inventory.getSize() : 0;
+		for (int i = inventorySize; i < this.content.length; i++) {
 			ItemStack item = this.content[i];
 			if (item == null || item.getType() == Material.AIR) {
 				continue;
@@ -171,18 +188,22 @@ public class Backpack {
 		return empty;
 	}
 
+	@Override
 	public boolean isValid() {
 		return this.inventory != null && this.type != null && this.content != null;
 	}
 
+	@Override
 	public Inventory getInventory() {
 		return this.inventory;
 	}
 
+	@Override
 	public BackpackType getType() {
 		return this.type;
 	}
 
+	@Override
 	public UniqueId getId() {
 		return this.id;
 	}

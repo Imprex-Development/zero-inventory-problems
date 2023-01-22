@@ -7,9 +7,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
 import net.imprex.zip.config.RecipeConfig;
+import net.imprex.zip.api.ZIPRecipe;
 import net.imprex.zip.config.BackpackTypeConfig;
 
-public class BackpackRecipe extends ShapedRecipe {
+public class BackpackRecipe extends ShapedRecipe implements ZIPRecipe {
 
 	private boolean discover;
 
@@ -33,6 +34,7 @@ public class BackpackRecipe extends ShapedRecipe {
 		}
 	}
 
+	@Override
 	public boolean canDiscover() {
 		return this.discover;
 	}

@@ -19,10 +19,13 @@ import org.bukkit.persistence.PersistentDataType;
 import com.google.common.io.ByteStreams;
 
 import io.netty.buffer.Unpooled;
+import net.imprex.zip.api.ZIPBackpack;
+import net.imprex.zip.api.ZIPHandler;
+import net.imprex.zip.api.ZIPUniqueId;
 import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
 
-public class BackpackHandler {
+public class BackpackHandler implements ZIPHandler {
 
 	private final BackpackPlugin plugin;
 	private final BackpackRegistry registry;
@@ -87,7 +90,8 @@ public class BackpackHandler {
 		return null;
 	}
 
-	public void save(Backpack backpack) {
+	@Override
+	public void save(ZIPBackpack backpack) {
 		if (Files.notExists(this.folderPath)) {
 			try {
 				Files.createDirectories(this.folderPath);
@@ -99,7 +103,7 @@ public class BackpackHandler {
 		Path file = this.folderPath.resolve(backpack.getId().toString());
 		try (FileOutputStream outputStream = new FileOutputStream(file.toFile())) {
 			Ingrim4Buffer buffer = new Ingrim4Buffer(Unpooled.buffer());
-			backpack.save(buffer);
+			((Backpack) backpack).save(buffer);
 
 			byte[] bytes = new byte[buffer.readableBytes()];
 			buffer.readBytes(bytes);
@@ -109,14 +113,17 @@ public class BackpackHandler {
 		}
 	}
 
-	public Backpack getBackpack(UniqueId id) {
+	@Override
+	public Backpack getBackpack(ZIPUniqueId id) {
 		return this.backpackById.get(id);
 	}
 
+	@Override
 	public Backpack getBackpack(Inventory inventory) {
 		return this.backpackByInventory.get(inventory);
 	}
 
+	@Override
 	public Backpack getBackpack(ItemStack item) {
 		if (item == null) {
 			return null;
@@ -151,6 +158,7 @@ public class BackpackHandler {
 		return null;
 	}
 
+	@Override
 	public boolean isBackpack(ItemStack item) {
 		if (item == null) {
 			return false;

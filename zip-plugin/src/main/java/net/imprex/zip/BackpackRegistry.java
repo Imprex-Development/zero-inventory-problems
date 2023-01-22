@@ -8,12 +8,14 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 
+import net.imprex.zip.api.ZIPBackpackType;
+import net.imprex.zip.api.ZIPRegistry;
 import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.config.BackpackTypeConfig;
 import net.imprex.zip.config.BackpackTypeListConfig;
 import net.imprex.zip.util.ZIPLogger;
 
-public class BackpackRegistry {
+public class BackpackRegistry implements ZIPRegistry {
 
 	private final BackpackPlugin plugin;
 
@@ -47,11 +49,13 @@ public class BackpackRegistry {
 		this.backpackType.clear();
 	}
 
+	@Override
 	public BackpackType getTypeByName(String name) {
 		return this.backpackType.get(name.toLowerCase(Locale.ROOT));
 	}
 
-	public Collection<BackpackType> getTypes() {
+	@Override
+	public Collection<ZIPBackpackType> getType() {
 		return Collections.unmodifiableCollection(this.backpackType.values());
 	}
 }

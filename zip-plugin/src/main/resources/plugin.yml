@@ -25,3 +25,9 @@ permissions:
   zeroinventoryproblems.link:
     default: true
     description: Link your empty backpack to another one
+  zeroinventoryproblems.give:
+    default: op
+    description: Give yourself or other player backpacks
+  zeroinventoryproblems.type:
+    default: op
+    description: A list of all backpack types

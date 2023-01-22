@@ -9,12 +9,14 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.imprex.zip.api.ZIPUniqueId;
+
 /**
  * 
  * @author dbs-leipzig
  * @see https://github.com/dbs-leipzig/gradoop/blob/develop/gradoop-common/src/main/java/org/gradoop/common/model/impl/id/ScriptedItemId.java
  */
-public class UniqueId implements Comparable<UniqueId> {
+public class UniqueId implements Comparable<UniqueId>, ZIPUniqueId {
 
 	  /**
 	   * Number of bytes to represent an id internally.
@@ -296,6 +298,7 @@ public class UniqueId implements Comparable<UniqueId> {
 	   *
 	   * @return Byte representation
 	   */
+	  @Override
 	  public byte[] toByteArray() {
 	    return bytes;
 	  }
