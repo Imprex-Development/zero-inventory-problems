@@ -12,11 +12,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.util.ZIPLogger;
@@ -45,23 +46,26 @@ public class MessageConfig {
 
 	public void copyLocaleWhenNotExist() {
 		try {
-			Files.createDirectories(this.localeFolder);
-
 			URI resource = BackpackPlugin.class.getResource("").toURI();
-			FileSystem fileSystem = FileSystems.getFileSystem(resource);
 
-			Path jarPath = fileSystem.getPath("/lang");
-			Files.walkFileTree(jarPath, new SimpleFileVisitor<Path>() {
+			try (FileSystem fileSystem = FileSystems.newFileSystem(
+					resource,
+					Collections.emptyMap())) {
+				Files.createDirectories(this.localeFolder);
+				
+				Path langPath = fileSystem.getPath("/lang");
+				Files.walkFileTree(langPath, new SimpleFileVisitor<Path>() {
 
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					Path filePath = MessageConfig.this.localeFolder.resolve(jarPath.relativize(file).toString());
-					if (Files.notExists(filePath)) {
-						Files.copy(file, MessageConfig.this.localeFolder.resolve(jarPath.relativize(file).toString()));
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						Path filePath = MessageConfig.this.localeFolder.resolve(langPath.relativize(file).toString());
+						if (Files.notExists(filePath)) {
+							Files.copy(file, MessageConfig.this.localeFolder.resolve(langPath.relativize(file).toString()));
+						}
+						return FileVisitResult.CONTINUE;
 					}
-					return FileVisitResult.CONTINUE;
-				}
-			});
+				});
+			}
 		} catch (IOException | URISyntaxException e) {
 			throw new RuntimeException("unable to copy locale configs", e);
 		}
@@ -105,13 +109,13 @@ public class MessageConfig {
 	public String getWithoutPrefix(MessageKey key, Object... args) {
 		String message = this.messages.get(key);
 		if (message == null) {
-			return key.getDefaultMessage();
+			message = key.getDefaultMessage();
 		}
 
 		return MessageFormat.format(message, args);
 	}
 
-	public void send(Player player, MessageKey key, Object... args) {
-		player.sendMessage(this.get(key, args));
+	public void send(CommandSender sender, MessageKey key, Object... args) {
+		sender.sendMessage(this.get(key, args));
 	}
 }

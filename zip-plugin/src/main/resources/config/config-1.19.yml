@@ -22,14 +22,14 @@ type:
         E: LEAD
         C: CHEST
         D: DIAMOND
-  middle:
-    uniqueName: 'middle'
-    displayName: '&7Middle &eBackpack'
+  medium:
+    uniqueName: 'medium'
+    displayName: '&7Medium &eBackpack'
     inventoryRows: 3
     customModelData: 2
     texture: 'ewogICJ0aW1lc3RhbXAiIDogMTY3NDM0NDQ0MzY4NywKICAicHJvZmlsZUlkIiA6ICIxMzdmMjg3MjUwOTE0ZmI4YjA0ZTYwYjg4MWUwZWE2YiIsCiAgInByb2ZpbGVOYW1lIiA6ICJub3JtYWxpc2luZyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9lZjhlZDY4NWIzYzNjYWI4NDM1ZDBmNmIwZDJkZGI0NmRmYTNhYzk2ZmUyZjlhNmQ3NDhmNzExOTFjMGI1MjJiIgogICAgfQogIH0KfQ=='
     lore:
-      - '&aA Middle Backpack'
+      - '&aA Medium Backpack'
     recipe:
       discover: true
       group: 'null'

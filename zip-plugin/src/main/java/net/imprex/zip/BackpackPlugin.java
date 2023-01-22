@@ -88,8 +88,12 @@ public class BackpackPlugin extends JavaPlugin implements Listener {
 	}
 
 	public void handleItemOnError(Cancellable event, Player player, ItemStack item) {
+		if (item == null) {
+			return;
+		}
+
 		ItemMeta meta = item.getItemMeta();
-		if (item == null || meta == null) {
+		if (meta == null) {
 			return;
 		}
 

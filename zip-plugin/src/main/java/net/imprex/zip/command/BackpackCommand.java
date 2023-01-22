@@ -1,165 +1,95 @@
 package net.imprex.zip.command;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.command.TabCompleter;
 
-import net.imprex.zip.Backpack;
-import net.imprex.zip.BackpackHandler;
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.NmsInstance;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
 
-public class BackpackCommand implements CommandExecutor {
+public class BackpackCommand implements CommandExecutor, TabCompleter {
 
-	private final BackpackHandler backpackHandler;
+	public static final String LINE_SEPARATOR = "\n";
+
 	private final MessageConfig messageConfig;
 
-	private final Map<Player, ItemStack> linking = new WeakHashMap<>();
+	private final Map<String, BackpackSubCommand> subCommand = new HashMap<>();
+
+	private String helpMessage;
 
 	public BackpackCommand(BackpackPlugin plugin) {
-		this.backpackHandler = plugin.getBackpackHandler();
 		this.messageConfig = plugin.getBackpackConfig().message();
+
+		this.registerSubCommand(new GiveCommand(plugin));
+		this.registerSubCommand(new LinkCommand(plugin));
+		this.registerSubCommand(new PickupCommand(plugin));
+		this.registerSubCommand(new TypeCommand(plugin));
+
+		this.buildHelpMessage();
 	}
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (!(sender instanceof Player)) {
-			sender.sendMessage(this.messageConfig.get(MessageKey.NotAConsoleCommand));
-			return true;
-		}
-
-		Player player = (Player) sender;
 		if (args.length != 0) {
-			String subCommand = args[0].toLowerCase();
-			if (subCommand.equals("pickup")) {
-				if (sender.hasPermission("zeroinventoryproblems.pickup")) {
-					this.handlePickupCommand(player);
-				} else {
-					this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, "zeroinventoryproblems.pickup");
+			String alias = args[0].toLowerCase();
+			BackpackSubCommand subCommand = this.subCommand.get(alias);
+			if (subCommand != null) {
+				if (!subCommand.hasPermission(sender)) {
+					this.messageConfig.send(sender, MessageKey.YouDontHaveTheFollowingPermission, subCommand.getPermission());
+					return true;
 				}
-				return true;
-			} else if (subCommand.equals("link")) {
-				if (sender.hasPermission("zeroinventoryproblems.link")) {
-					this.handleLinkCommand(player);
-				} else {
-					this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, "zeroinventoryproblems.link");
-				}
-				return true;
-			} else if (subCommand.equals("cancel")) {
-				if (sender.hasPermission("zeroinventoryproblems.link")) {
-					this.handleLinkCancelCommand(player);
-				} else {
-					this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, "zeroinventoryproblems.link");
-				}
+
+				subCommand.onCommand(sender, Arrays.copyOfRange(args, 1, args.length));
 				return true;
 			}
 		}
 
-		this.sendHelp(player);
+		sender.sendMessage(this.helpMessage);
 		return true;
 	}
 
-	public void sendHelp(CommandSender sender) {
-		sender.sendMessage("""
-				%s
-				%s
-				%s
-				%s
-				%s
-				""".formatted(
-				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpStart),
-				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine1),
-				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine2),
-				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine3),
-				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpEnd)));
-	}
-
-	public void handlePickupCommand(Player player) {
-		Backpack backpack = this.checkIfHoldingBackpack(player);
-		if (backpack == null) {
-			return;
-		}
-
-		if (!backpack.hasUnuseableItem()) {
-			this.messageConfig.send(player, MessageKey.YourBackpackHasNoUnuseableItems);
-			return;
-		}
-
-		if (backpack.giveUnsueableItems(player)) {
-			this.messageConfig.send(player, MessageKey.YouRecivedAllUnuseableItems);
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		ArrayList<String> result = new ArrayList<>();
+		if (args.length == 0) {
+			this.subCommand.keySet().forEach(result::add);
+		} else if (args.length == 1) {
+			String subCommand = args[0].toLowerCase(Locale.ROOT);
+			this.subCommand.keySet().stream().filter(alias -> alias.startsWith(subCommand)).forEach(result::add);
 		} else {
-			this.messageConfig.send(player, MessageKey.YouNeedMoreSpaceInYourInventory);
+			String alias = args[0].toLowerCase(Locale.ROOT);
+			BackpackSubCommand subCommand = this.subCommand.get(alias);
+			if (subCommand != null) {
+				subCommand.onTabComplete(sender, Arrays.copyOfRange(args, 1, args.length), result);
+			}
 		}
+		return result;
 	}
 
-	public void handleLinkCommand(Player player) {
-		Backpack backpack = this.checkIfHoldingBackpack(player);
-		if (backpack == null) {
-			return;
-		}
-
-		ItemStack item = player.getInventory().getItemInMainHand();
-		ItemStack linking = this.linking.remove(player);
-		if (linking == null) {
-			this.linking.put(player, item);
-			this.messageConfig.send(player, MessageKey.YouCanNowHoldTheBackpackWichShoudBeLinked);
-			return;
-		}
-
-		Backpack linkingBackpack = this.backpackHandler.getBackpack(linking);
-		if (linkingBackpack == null) {
-			this.messageConfig.send(player, MessageKey.ThisShoudNotHappendPleaseTryToLinkAgain);
-			return;
-		}
-
-		if (backpack.hasUnuseableItem()) {
-			this.messageConfig.send(player, MessageKey.YouHaveUnuseableItemsUsePickup);
-			return;
-		} else if (backpack.hasContent()) {
-			this.messageConfig.send(player, MessageKey.YourBackpackIsNotEmpty);
-			return;
-		} else if (!player.getInventory().contains(linking)) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldBothBackpacksInYouInventory);
-			return;
-		} else if (!linkingBackpack.getType().getUniqueName().equals(backpack.getType().getUniqueName())) {
-			this.messageConfig.send(player, MessageKey.BothBackpacksNeedToBeTheSameType);
-			return;
-		} else if (linkingBackpack.equals(backpack)) {
-			this.messageConfig.send(player, MessageKey.ThisBackpackIsAlreadyLinkedThoThat);
-			return;
-		}
-
-		linkingBackpack.applyOnItem(item);
-		this.messageConfig.send(player, MessageKey.YourBackpackIsNowLinked);
+	public void registerSubCommand(BackpackSubCommand subCommand) {
+		subCommand.getAliases().stream().forEach(alias -> this.subCommand.put(alias, subCommand));
 	}
 
-	public void handleLinkCancelCommand(Player player) {
-		if (this.linking.remove(player) != null)  {
-			this.messageConfig.send(player, MessageKey.YourBackpackLinkRequestWasCancelled);
-		} else {
-			this.messageConfig.send(player, MessageKey.YouNeedToLinkABackpackFirst);
-		}
-	}
+	public void buildHelpMessage() {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpStart));
+		stringBuilder.append(LINE_SEPARATOR);
 
-	public Backpack checkIfHoldingBackpack(Player player) {
-		ItemStack item = player.getInventory().getItemInMainHand();
-		if (item == null || NmsInstance.isAir(item.getType())) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldABackpackInYourHand);
-			return null;
+		for (BackpackSubCommand subCommand : this.subCommand.values()) {
+			stringBuilder.append(this.messageConfig.getWithoutPrefix(subCommand.getHelpLine()));
+			stringBuilder.append(LINE_SEPARATOR);
 		}
 
-		Backpack backpack = this.backpackHandler.getBackpack(item);
-		if (backpack == null) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldABackpackInYourHand);
-			return null;
-		}
-		return backpack;
+		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpEnd));
+		this.helpMessage = stringBuilder.toString();
 	}
 }

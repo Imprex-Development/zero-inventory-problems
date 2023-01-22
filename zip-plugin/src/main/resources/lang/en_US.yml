@@ -1,23 +1,38 @@
-prefix: '&8[&bZIP&8] &7'
-AErrorOccured: 'A error occured'
-clickHereToSeeTheLatestRelease: 'Click here to see the latest release'
-ANewReleaseIsAvailable: 'A new release is available'
-clickHere: '§f§l[CLICK HERE]'
-commandHelpStart: '§8[]§7========== §eZeroInventoryProblems §7==========§8[]'
-commandHelpLine1: '§8/§7zip §epickup §8| §7Pickup unaccessable items§8.'
-commandHelpLine2: '§8/§7zip §elink §8| §7Link multiply backpacks§8.'
-commandHelpLine3: '§8/§7zip §ecancel §8| §7Cancel A backpack link request§8.'
-commandHelpEnd: '§8[]§7========== §eZeroInventoryProblems §7==========§8[]'
-youNeedToHoldABackpackInYourHand: 'You need to hold a backpack in your hand'
-yourBackpackHasNoUnuseableItems: 'Your backpack has no unuseable items'
-youNeedMoreSpaceInYourInventory: 'You need more space in your inventory'
-youRecivedAllUnuseableItems: 'You recived all unuseable items'
-youHaveUnuseableItemsUsePickup: 'You have unuseable items§8! §7Use §e/zip pickup'
-yourBackpackIsNotEmpty: 'Your Backpack is not empty'
-youCanNowHoldTheBackpackWichShoudBeLinked: 'You can now hold your backpack wich shoud be linked'
-thisShoudNotHappendPleaseTryToLinkAgain: 'This shoud not be happening, please try to link again'
-yourBackpackIsNowLinked: 'Your backpack is now linked'
-youNeedToLinkABackpackFirst: 'You need to link a backpack at first'
-yourBackpackLinkRequestWasCancelled: 'Your backpack link request was cancelled'
-bothBackpacksNeedToBeTheSameType: 'Both Backpacks need to be the same type'
-thisBackpackIsAlreadyLinkedThoThat: 'This backpack is already linked to that backpack'
+prefix: "&8[&eZIP&8] &7"
+notAConsoleCommand: "This command can not be executed from the console"
+youDontHaveTheFollowingPermission: "You Don''t have the following permission &8\"&e{0}&8\""
+ThisBackpackNoLongerExist: "This backpack no longer exist"
+clickHereToSeeTheLatestRelease: "Click here to see the latest release"
+ANewReleaseIsAvailable: "A new version is available"
+clickHere: "&f&l[CLICK HERE]"
+commandHelpStart: "&8[]&7========== &eZeroInventoryProblems &7==========&8[]"
+commandHelpPickup: "&8/&7zip &epickup &8| &7Pickup inaccessible items&8."
+commandHelpLink: "&8/&7zip &elink &7<&ecancel&7> &8| &7Link multiple backpacks or cancel the request&8."
+commandHelpGive: "&8/&7zip &egive &7[&etype&7] &7<&eplayer&7> &8| &7Give yourself a backpack&8."
+commandHelpType: "&8/&7zip &etype &8| &7Get a list of all backpacks&8."
+commandHelpEnd: "&8[]&7========== &eZeroInventoryProblems &7==========&8[]"
+commandTypeStart: "&8[]&7========== &eZeroInventoryProblems Types &7==========&8[]"
+commandTypeContent: "  &8-&e{0}"
+commandTypeButtonGive: "&7[&eGive&7]"
+commandTypeButtonGiveHover: "&eClick here to give yourself a &8\"&e{0}&8\" backpack"
+commandTypeEnd: "&8[]&7========== &eZeroInventoryProblems Types &7==========&8[]"
+noOnlinePlayerWasFound: "No online player with the name &8\"&e{0}&8} &7was found"
+pleaseEnterABackpackType: "Please enter a backpack type &8(small/medium/big)"
+backpackTypeWasNotFound: "Backpack type &8\"&e{0}&8\" &7was not found"
+youHaveGivenYourselfABackpack: "You received a &8\"&e{0}&8\" &7backpack"
+youHaveGivenTargetPlayerABackpack: "You given a &8\"&e{0}&8\" &7backpack to &8\"&e{1}&8\""
+youNeedToHoldABackpackInYourHand: "You need to hold a backpack in your hand"
+yourBackpackHasNoUnusableItems: "Your backpack has no inaccessible items"
+youNeedMoreSpaceInYourInventory: "You need more space in your inventory"
+targetPlayerNeedMoreSpaceInYourInventory: "&8\"&e{0}&8\" &7needs more space in his/her inventory"
+youReceivedAllUnusableItems: "You''ve received all inaccessible items"
+youHaveUnusableItemsUsePickup: "Your backpack contains inaccessible items&8! &7Use &e/zip pickup"
+yourBackpackIsNotEmpty: "Your Backpack needs to be empty"
+youNeedToHoldBothBackpacksInYourInventory: "You need to hold both backpacks in your inventory"
+youCanNowHoldTheBackpackWhichShouldBeLinked: "You can now hold the second backpack that should be linked"
+thisShouldNotHappenedPleaseTryToLinkAgain: "An error occurred, please try to link again"
+yourBackpackIsNowLinked: "Your backpack is now linked"
+youNeedToLinkABackpackFirst: "You need to link a backpack at first"
+yourBackpackLinkRequestWasCancelled: "Your backpack link request was cancelled"
+bothBackpacksNeedToBeTheSameType: "Both Backpacks need to be the same type"
+thisBackpackIsAlreadyLinkedThoThat: "This backpack is already linked to that backpack"

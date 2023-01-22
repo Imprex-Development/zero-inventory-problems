@@ -29,6 +29,13 @@ public class BackpackType {
 		this.recipe = new BackpackRecipe(plugin, config, this.item);
 	}
 
+	public ItemStack createItem() {
+		ItemStack item = new ItemStack(this.item);
+		Backpack backpack = this.create();
+		backpack.applyOnItem(item);
+		return item;
+	}
+
 	public Backpack create() {
 		return new Backpack(this.plugin, this);
 	}

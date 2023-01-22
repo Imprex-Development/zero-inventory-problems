@@ -10,6 +10,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -63,6 +64,15 @@ public class Ingrim4Buffer extends ByteBuf {
 			if (value == 0)
 				break;
 		}
+	}
+
+	public UUID readUUID() {
+		return new UUID(this.buf.readLong(), this.buf.readLong());
+	}
+
+	public void writeUUID(UUID uuid) {
+		this.buf.writeLong(uuid.getMostSignificantBits());
+		this.buf.writeLong(uuid.getLeastSignificantBits());
 	}
 
 	/**
