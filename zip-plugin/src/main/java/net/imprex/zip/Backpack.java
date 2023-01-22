@@ -132,7 +132,7 @@ public class Backpack {
 				return true;
 			}
 		}
-		return false;
+		return this.hasUnuseableItem();
 	}
 
 	public boolean hasUnuseableItem() {

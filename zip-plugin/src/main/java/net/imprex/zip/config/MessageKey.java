@@ -12,6 +12,7 @@ public enum MessageKey {
 	CommandHelpStart("commandHelpStart", "§8[]§7========== §eZeroInventoryProblems §7==========§8[]"),
 	CommandHelpLine1("commandHelpLine1", "§8/§7zip §epickup §8| §7Pickup unaccessable items§8."),
 	CommandHelpLine2("commandHelpLine2", "§8/§7zip §elink §8| §7Link multiply backpacks§8."),
+	CommandHelpLine3("commandHelpLine3", "§8/§7zip §ecancel §8| §7Cancel A backpack link request§8."),
 	CommandHelpEnd("commandHelpEnd", "§8[]§7========== §eZeroInventoryProblems §7==========§8[]"),
 	YouNeedToHoldABackpackInYourHand("youNeedToHoldABackpackInYourHand", "You need to hold a backpack in your hand"),
 	YourBackpackHasNoUnuseableItems("yourBackpackHasNoUnuseableItems", "Your backpack has no unuseable items"),
@@ -23,6 +24,8 @@ public enum MessageKey {
 	YouCanNowHoldTheBackpackWichShoudBeLinked("youCanNowHoldTheBackpackWichShoudBeLinked", "You can now hold your backpack wich shoud be linked"),
 	ThisShoudNotHappendPleaseTryToLinkAgain("thisShoudNotHappendPleaseTryToLinkAgain", "This shoud not be happening, please try to link again"),
 	YourBackpackIsNowLinked("yourBackpackIsNowLinked", "Your backpack is now linked"),
+	YouNeedToLinkABackpackFirst("youNeedToLinkABackpackFirst", "You need to link a backpack at first"),
+	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack");
 

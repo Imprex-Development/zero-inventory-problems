@@ -52,6 +52,13 @@ public class BackpackCommand implements CommandExecutor {
 					this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, "zeroinventoryproblems.link");
 				}
 				return true;
+			} else if (subCommand.equals("cancel")) {
+				if (sender.hasPermission("zeroinventoryproblems.link")) {
+					this.handleLinkCancelCommand(player);
+				} else {
+					this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, "zeroinventoryproblems.link");
+				}
+				return true;
 			}
 		}
 
@@ -60,15 +67,17 @@ public class BackpackCommand implements CommandExecutor {
 	}
 
 	public void sendHelp(CommandSender sender) {
-		sender.sendMessage(String.format("""
+		sender.sendMessage("""
 				%s
 				%s
 				%s
 				%s
-				""",
+				%s
+				""".formatted(
 				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpStart),
 				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine1),
 				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine2),
+				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLine3),
 				this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpEnd)));
 	}
 
@@ -129,6 +138,14 @@ public class BackpackCommand implements CommandExecutor {
 
 		linkingBackpack.applyOnItem(item);
 		this.messageConfig.send(player, MessageKey.YourBackpackIsNowLinked);
+	}
+
+	public void handleLinkCancelCommand(Player player) {
+		if (this.linking.remove(player) != null)  {
+			this.messageConfig.send(player, MessageKey.YourBackpackLinkRequestWasCancelled);
+		} else {
+			this.messageConfig.send(player, MessageKey.YouNeedToLinkABackpackFirst);
+		}
 	}
 
 	public Backpack checkIfHoldingBackpack(Player player) {
