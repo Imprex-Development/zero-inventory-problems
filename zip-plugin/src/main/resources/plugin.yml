@@ -31,3 +31,6 @@ permissions:
   zeroinventoryproblems.type:
     default: op
     description: A list of all backpack types
+  zeroinventoryproblems.lore:
+    default: op
+    description: Change the lore of your current backpack
