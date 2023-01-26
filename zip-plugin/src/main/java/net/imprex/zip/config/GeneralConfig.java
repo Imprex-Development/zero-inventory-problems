@@ -10,6 +10,8 @@ public class GeneralConfig {
 
 	public String locale;
 
+	public int maxLoreCount;
+
 	public GeneralConfig(ConfigurationSection config) {
 		if (config == null) {
 			throw new IllegalArgumentException("Config section general was not found");
@@ -31,6 +33,12 @@ public class GeneralConfig {
 			this.locale = config.getString("locale");
 		} else {
 			throw new IllegalArgumentException("Config section general is missing locale value");
+		}
+
+		if (config.contains("maxLoreCount") && config.isInt("maxLoreCount")) {
+			this.maxLoreCount = config.getInt("maxLoreCount");
+		} else {
+			this.maxLoreCount = 10;
 		}
 	}
 }
