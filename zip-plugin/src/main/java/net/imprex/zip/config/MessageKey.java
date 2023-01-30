@@ -54,16 +54,13 @@ public enum MessageKey {
 	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
-<<<<<<< feat-storage-system
-	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked");
-=======
+	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked"),
 	PleaseEnterANumber("pleaseEnterANumber", "Please enter a number"),
 	EnterANumberBetweenArgsAndArgs("enterANumberBetweenArgsAndArgs", "Please enter a number between {0} and {1}"),
 	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}");
->>>>>>> master
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {
