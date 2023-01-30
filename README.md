@@ -1,4 +1,4 @@
-<img align="right" src="https://user-images.githubusercontent.com/13753840/213902224-92f7e6ec-bc7e-4fea-8c45-154a202004dd.jpg" height="200" width="200">
+<img align="right" src="https://user-images.githubusercontent.com/13753840/213946932-635d40a3-a278-427c-9e9c-245a89ed12a9.png" height="200" width="200">
 
 # Zero Inventory Problems - ZIP
 [![Release Status](https://github.com/Imprex-Development/zero-inventory-problems/workflows/Releases/badge.svg)](https://github.com/Imprex-Development/zero-inventory-problems/releases/latest) [![Build Status](https://github.com/Imprex-Development/zero-inventory-problems/workflows/Build/badge.svg)](https://github.com/Imprex-Development/zero-inventory-problems/actions?query=workflow%3ABuild)

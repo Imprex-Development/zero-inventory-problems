@@ -54,6 +54,7 @@ public enum MessageKey {
 	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
+	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked"),
 	PleaseEnterANumber("pleaseEnterANumber", "Please enter a number"),
 	EnterANumberBetweenArgsAndArgs("enterANumberBetweenArgsAndArgs", "Please enter a number between {0} and {1}"),
 	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),
