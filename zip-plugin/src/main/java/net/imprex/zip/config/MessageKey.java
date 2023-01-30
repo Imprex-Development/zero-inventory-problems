@@ -14,12 +14,26 @@ public enum MessageKey {
 	CommandHelpLink("commandHelpLink", "§8/§7zip §elink §7<§ecancel§7> §8| §7Link multiple backpacks or cancel the request§8."),
 	CommandHelpGive("commandHelpGive", "§8/§7zip §egive §7[§etype§7] §7<§eplayer§7> §8| §7Give yourself a backpack§8."),
 	CommandHelpType("commandHelpType", "§8/§7zip §etype §8| §7Get a list of all backpacks§8."),
+	CommandHelpLore("commandHelpLore", "§8/§7zip §elore §8| §7Write a custom lore§8."),
 	CommandHelpEnd("commandHelpEnd", "§8[]§7========== §eZeroInventoryProblems §7==========§8[]"),
 	CommandTypeStart("commandTypeStart", "§8[]§7========== §eZeroInventoryProblems Types §7==========§8[]"),
 	CommandTypeContent("commandTypeContent", "  §8-§e{0}"),
 	CommandTypeButtonGive("commandTypeButtonGive", "§7[§eGive§7]"),
 	CommandTypeButtonGiveHover("commandTypeButtonGiveHover", "§eClick here to give yourself a §8\"§e{0}§8\" backpack"),
 	CommandTypeEnd("commandTypeEnd", "§8[]§7========== §eZeroInventoryProblems Types §7==========§8[]"),
+	CommandHelpLoreSyntax("commandHelpLoreSyntax", """
+			§8/§7zip §elore add §7<§eMessage§7> §8| §7Add a lore§8.
+			§8/§7zip §elore change §7<§eLine§7> §7<§eMessage§7> §8| §7Change a line§8.
+			§8/§7zip §elore delete §7<§eLine§7> §8| §7Delete a line§8.
+			§8/§7zip §elore list §8| §7List of all lore lines§8.
+			"""),
+	CommandLoreStart("commandLoreStart", "§8[]§7========== §eZeroInventoryProblems Lore §7==========§8[]"),
+	CommandLoreContent("commandLoreContent", "  §8{0}: §e{1}"),
+	CommandLoreButtonEdit("commandLoreButtonEdit", "§7[§eEdit§7]"),
+	CommandLoreButtonEditHover("commandLoreButtonEditHover", "§eClick here to edit this line"),
+	CommandLoreButtonDelete("commandLoreButtonDelete", "§7[§eDelete§7]"),
+	CommandLoreButtonDeleteHover("commandLoreButtonDeleteHover", "§eClick here to delete this line"),
+	CommandLoreEnd("commandLoreEnd", "§8[]§7========== §eZeroInventoryProblems Lore §7==========§8[]"),
 	NoOnlinePlayerWasFound("noOnlinePlayerWasFound", "No online player with the name §8\"§e{0}§8} §7was found"),
 	PleaseEnterABackpackType("pleaseEnterABackpackType", "Please enter a backpack type §8(small/medium/big)"),
 	BackpackTypeWasNotFound("backpackTypeWasNotFound", "Backpack type §8\"§e{0}§8\" §7was not found"),
@@ -40,7 +54,16 @@ public enum MessageKey {
 	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
+<<<<<<< feat-storage-system
 	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked");
+=======
+	PleaseEnterANumber("pleaseEnterANumber", "Please enter a number"),
+	EnterANumberBetweenArgsAndArgs("enterANumberBetweenArgsAndArgs", "Please enter a number between {0} and {1}"),
+	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),
+	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
+	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
+	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}");
+>>>>>>> master
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {
