@@ -41,10 +41,6 @@
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
 		</repository>
-		<repository>
-			<id>nms-repo</id>
-			<url>https://repo.codemc.io/repository/nms/</url>
-		</repository>
 	</repositories>
 
 	<build>
