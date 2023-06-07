@@ -26,7 +26,7 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 
 /**
  * @author Imprex-Development
- * @see https://github.com/Imprex-Development/orebfuscator/blob/master/orebfuscator-plugin/src/main/java/net/imprex/orebfuscator/UpdateSystem.java
+ * @see <a href="https://github.com/Imprex-Development/orebfuscator/blob/master/orebfuscator-plugin/src/main/java/net/imprex/orebfuscator/UpdateSystem.java">UpdateSystem.java</a>
  */
 public class UpdateSystem {
 

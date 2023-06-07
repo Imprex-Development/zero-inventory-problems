@@ -29,9 +29,9 @@
 		<plugin.flatten.version>1.2.7</plugin.flatten.version>
 		<plugin.specialsource.version>1.2.4</plugin.specialsource.version>
 
-		<maven.compiler.source>16</maven.compiler.source>
-		<maven.compiler.target>16</maven.compiler.target>
-		<java.version>16</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<java.version>17</java.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -56,7 +56,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${plugin.compile.version}</version>
 				<configuration>
-					<release>16</release>
+					<release>17</release>
 				</configuration>
 			</plugin>
 			<plugin>

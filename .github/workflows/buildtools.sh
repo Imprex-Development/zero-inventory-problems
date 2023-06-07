@@ -28,3 +28,4 @@ checkVersion () {
 checkVersion "1.19"   "17"
 checkVersion "1.19.3" "17"
 checkVersion "1.19.4" "17"
+checkVersion "1.20" "17"
