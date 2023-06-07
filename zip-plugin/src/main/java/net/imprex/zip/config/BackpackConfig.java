@@ -22,6 +22,10 @@ public class BackpackConfig {
 		this.plugin = plugin;
 	}
 
+	public void serialize() {
+		
+	}
+
 	public void deserialize() {
 		try {
 			Path dataFolder = this.plugin.getDataFolder().toPath();
