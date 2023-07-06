@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import net.imprex.zip.BackpackPlugin;
@@ -42,6 +43,9 @@ public class MessageConfig {
 
 		this.copyLocaleWhenNotExist();
 		this.loadLocale(plugin.getBackpackConfig().general().locale);
+	}
+
+	public void save(ConfigurationSection config) {
 	}
 
 	public void copyLocaleWhenNotExist() {

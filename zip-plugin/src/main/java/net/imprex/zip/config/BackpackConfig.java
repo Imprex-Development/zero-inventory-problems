@@ -6,9 +6,9 @@ import java.nio.file.Path;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.common.MinecraftVersion;
 
 public class BackpackConfig {
 
@@ -23,7 +23,28 @@ public class BackpackConfig {
 	}
 
 	public void serialize() {
-		
+		FileConfiguration configuration = new YamlConfiguration();
+
+		ConfigurationSection generalSection = configuration.createSection("general");
+		this.generalConfig.save(generalSection);
+
+		ConfigurationSection backpackTypeListSection = configuration.createSection("general");
+		this.typeListConfig.save(backpackTypeListSection);
+
+		try {
+			Path dataFolder = this.plugin.getDataFolder().toPath();
+			Path configPath = dataFolder.resolve("config.yml");
+
+			if (Files.notExists(configPath)) {
+				if (Files.notExists(dataFolder)) {
+					Files.createDirectories(dataFolder);
+				}
+
+				configuration.save(configPath.toFile());
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("unable to create config", e);
+		}
 	}
 
 	public void deserialize() {
@@ -32,13 +53,11 @@ public class BackpackConfig {
 			Path configPath = dataFolder.resolve("config.yml");
 
 			if (Files.notExists(configPath)) {
-				String configVersion = MinecraftVersion.getMajorVersion() + "." + MinecraftVersion.getMinorVersion();
-
 				if (Files.notExists(dataFolder)) {
 					Files.createDirectories(dataFolder);
 				}
 
-				Files.copy(BackpackPlugin.class.getResourceAsStream("/config/config-" + configVersion + ".yml"), configPath);
+				Files.copy(BackpackPlugin.class.getResourceAsStream("/config.yml"), configPath);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException("unable to create config", e);

@@ -20,7 +20,7 @@ public class GeneralConfig {
 		if (config.contains("checkForUpdates") && config.isBoolean("checkForUpdates")) {
 			this.checkForUpdates = config.getBoolean("checkForUpdates");
 		} else {
-			throw new IllegalArgumentException("Config section general is missing errorOccured value");
+			throw new IllegalArgumentException("Config section general is missing checkForUpdates value");
 		}
 
 		if (config.contains("verbose") && config.isBoolean("verbose")) {
@@ -40,5 +40,8 @@ public class GeneralConfig {
 		} else {
 			this.maxLoreCount = 10;
 		}
+	}
+
+	public void save(ConfigurationSection config) {
 	}
 }
