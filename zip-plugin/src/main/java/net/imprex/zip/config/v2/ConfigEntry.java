@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 public @interface ConfigEntry {
 
 	String name();
-	String defaultValue();
+	String defaultValue() default "";
 
 	boolean readonly() default false;
 }
