@@ -13,6 +13,7 @@ import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.config.BackpackTypeListConfig;
 import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.config.MessageConfig;
+import net.imprex.zip.config.v2.converter.BooleanConverter;
 import net.imprex.zip.config.v2.converter.ConfigConverter;
 import net.imprex.zip.config.v2.converter.IntegerConverter;
 import net.imprex.zip.config.v2.converter.ListConverter;
@@ -35,6 +36,7 @@ public class BackpackConfig {
 
 		this.registerConverter(new StringConverter());
 		this.registerConverter(new IntegerConverter());
+		this.registerConverter(new BooleanConverter());
 		this.registerConverter(new ListConverter());
 	}
 
@@ -92,13 +94,13 @@ public class BackpackConfig {
 			if (entry == null) {
 				continue;
 			}
-
-			ConfigurationSection entryConfig = config;
 			Object value = field.get(configInstance);
 
-			ConfigSection entrySection = this.getConfigSection(field.getType(), false);
+			ConfigSection entrySection = field.getType().getAnnotation(ConfigSection.class);
 			if (entrySection != null) {
 				String entrySectionName = entrySection.name();
+
+				ConfigurationSection entryConfig = config;
 				entryConfig = config.getConfigurationSection(entrySectionName);
 				if (entryConfig == null) {
 					entryConfig = config.createSection(entrySectionName);
@@ -126,7 +128,7 @@ public class BackpackConfig {
 				continue;
 			}
 
-			ConfigSection entrySection = this.getConfigSection(field.getType(), false);
+			ConfigSection entrySection = field.getType().getAnnotation(ConfigSection.class);
 			if (entrySection != null) {
 				String entrySectionName = entrySection.name();
 				ConfigurationSection entryConfig = config.getConfigurationSection(entrySectionName);
@@ -139,7 +141,7 @@ public class BackpackConfig {
 				continue;
 			}
 
-			ConfigConverter<?> converter = this.getConverter(configClass);
+			ConfigConverter<?> converter = this.getConverter(field.getType());
 			Object value = converter.deserialize(config, entry);
 			field.set(configInstance, value);
 		}

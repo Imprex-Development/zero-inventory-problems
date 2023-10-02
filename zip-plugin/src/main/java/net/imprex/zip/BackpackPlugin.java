@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.imprex.zip.api.ZIPService;
 import net.imprex.zip.command.BackpackCommand;
 import net.imprex.zip.config.BackpackConfig;
+import net.imprex.zip.config.v2.GeneralConfig;
 import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
@@ -33,37 +34,45 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 
 	@Override
 	public void onLoad() {
-		this.backpackIdentifierKey = this.createNamespacedKey("backpack.type");
-		this.backpackStorageKey = this.createNamespacedKey("backpack.id");
+//		this.backpackIdentifierKey = this.createNamespacedKey("backpack.type");
+//		this.backpackStorageKey = this.createNamespacedKey("backpack.id");
 
-		this.backpackConfig = new BackpackConfig(this);
-		this.backpackRegistry = new BackpackRegistry(this);
-		this.backpackHandler = new BackpackHandler(this);
+//		this.backpackConfig = new BackpackConfig(this);
+//		this.backpackRegistry = new BackpackRegistry(this);
+//		this.backpackHandler = new BackpackHandler(this);
 	}
 
 	@Override
 	public void onEnable() {
+		var config = new net.imprex.zip.config.v2.BackpackConfig(this);
 		try {
-			NmsInstance.initialize();
-
-			this.backpackConfig.deserialize();
-
-			this.backpackRegistry.register();
-			this.backpackHandler.loadBackpacks();
-
-			this.updateSystem = new UpdateSystem(this);
-
-			new MetricsSystem(this);
-
-			this.getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
-
-			Bukkit.getPluginManager().registerEvents(new BackpackListener(this), this);
-			Bukkit.getServicesManager().register(ZIPService.class, this, this, ServicePriority.Normal);
+			config.serialize(new GeneralConfig());
+			GeneralConfig general = config.deserialize(GeneralConfig.class);
+			System.out.println(general.checkForUpdates);
 		} catch (Exception e) {
-			ZIPLogger.error("An error occured while enabling plugin", e);
-
-			Bukkit.getPluginManager().registerEvents(this, this);
+			e.printStackTrace();
 		}
+//		try {
+//			NmsInstance.initialize();
+//
+//			this.backpackConfig.deserialize();
+//
+//			this.backpackRegistry.register();
+//			this.backpackHandler.loadBackpacks();
+//
+//			this.updateSystem = new UpdateSystem(this);
+//
+//			new MetricsSystem(this);
+//
+//			this.getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
+//
+//			Bukkit.getPluginManager().registerEvents(new BackpackListener(this), this);
+//			Bukkit.getServicesManager().register(ZIPService.class, this, this, ServicePriority.Normal);
+//		} catch (Exception e) {
+//			ZIPLogger.error("An error occured while enabling plugin", e);
+//
+//			Bukkit.getPluginManager().registerEvents(this, this);
+//		}
 	}
 
 	@Override
