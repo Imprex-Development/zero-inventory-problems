@@ -14,7 +14,7 @@ public class ReflectionUtil {
 	}
 
 	public static String getCraftBukkit(String className) {
-		return String.format("%s.%s.%s",CRAFTBUKKIT_PATH, MinecraftVersion.getNmsVersion(), className);
+		return String.format("%s.%s.%s", CRAFTBUKKIT_PATH, MinecraftVersion.getNmsVersion(), className);
 	}
 
 	public static Class<?> getMinecraftServerClass(String className) {

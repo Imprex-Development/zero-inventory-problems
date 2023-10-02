@@ -24,4 +24,8 @@ public class BackpackTypeListConfig {
 			}
 		}
 	}
+
+	public void save(ConfigurationSection config) {
+		
+	}
 }
