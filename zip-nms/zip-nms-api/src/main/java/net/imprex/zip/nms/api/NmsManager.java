@@ -14,5 +14,7 @@ public interface NmsManager {
 
 	void setSkullProfile(SkullMeta meta, String texture);
 
+	void setupBackpackItem(ItemStack item);
+
 	boolean isAir(Material material);
 }

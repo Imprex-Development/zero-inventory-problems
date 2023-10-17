@@ -7,10 +7,10 @@ import net.imprex.zip.config.v3.SimpleSectionRoot;
 @SimpleSectionRoot(name = "example", version = 4)
 public class ExampleConfig {
 
-	@SimpleComment("Just some testing")
+	@SimpleComment(value = "Just some testing", inline = true)
 	@SimpleKey("testBoolean")
 	public Boolean tested;
 
-	@SimpleKey(value = "general")
+	@SimpleKey
 	public GeneralConfig general;
 }

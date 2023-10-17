@@ -21,6 +21,9 @@ import net.imprex.zip.config.MessageKey;
 
 public class Backpack implements ZIPBackpack {
 
+	public static final String META_CAN_PLACE_ON = "CanPlaceOn";
+	public static final String META_CAN_DESTROY = "CanDestroy";
+
 	private final BackpackHandler backpackHandler;
 	private final NamespacedKey storageKey;
 	private final MessageConfig messageConfig;
@@ -111,6 +114,7 @@ public class Backpack implements ZIPBackpack {
 		Objects.nonNull(player);
 
 		if (this.inventory != null) {
+			player.closeInventory();
 			player.openInventory(this.inventory);
 
 			if (this.hasUnuseableContent()) {
@@ -127,9 +131,13 @@ public class Backpack implements ZIPBackpack {
 	@Override
 	public boolean applyOnItem(ItemStack item) {
 		if (item != null && item.hasItemMeta()) {
-			ItemMeta meta = item.getItemMeta();
-			meta.getPersistentDataContainer().set(this.storageKey, PersistentDataType.BYTE_ARRAY, id.toByteArray());
-			item.setItemMeta(meta);
+			try {
+				NmsInstance.setupBackpackItem(item);
+			} finally {
+				ItemMeta meta = item.getItemMeta();
+				meta.getPersistentDataContainer().set(this.storageKey, PersistentDataType.BYTE_ARRAY, id.toByteArray());
+				item.setItemMeta(meta);
+			}
 			return true;
 		}
 		return false;

@@ -50,6 +50,10 @@ public class NmsInstance {
 		instance.setSkullProfile(meta, texture);
 	}
 
+	public static void setupBackpackItem(ItemStack item) {
+		instance.setupBackpackItem(item);
+	}
+
 	public static boolean isAir(Material material) {
 		return instance.isAir(material);
 	}

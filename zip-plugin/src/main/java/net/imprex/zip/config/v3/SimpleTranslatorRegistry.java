@@ -24,7 +24,9 @@ public class SimpleTranslatorRegistry {
 	}
 
 	public static void registerTranslator(SimpleTranslator<?, ?> converter) {
-		TRANSLATOR_LIST.put(converter.type(), converter);
+		for (Class<?> type : converter.types()) {
+			TRANSLATOR_LIST.put(type, converter);
+		}
 	}
 
 	@SuppressWarnings("unchecked") // TODO find a better way then using unchecked

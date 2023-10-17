@@ -86,6 +86,10 @@ public class ZipNmsManager implements NmsManager {
 	}
 
 	@Override
+	public void setupBackpackItem(ItemStack item) {
+	}
+
+	@Override
 	public boolean isAir(Material material) {
 		return material == null || material == Material.AIR;
 	}

@@ -12,14 +12,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.imprex.zip.api.ZIPService;
-import net.imprex.zip.command.BackpackCommand;
 import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.config.v2.GeneralConfig;
-import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 

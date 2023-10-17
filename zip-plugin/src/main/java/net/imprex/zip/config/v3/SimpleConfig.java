@@ -11,10 +11,9 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -22,9 +21,11 @@ import org.bukkit.plugin.Plugin;
 
 import com.google.common.base.Charsets;
 
+import net.imprex.zip.util.ZIPLogger;
+
 public class SimpleConfig<Config> {
 
-	private static final String VERSION_FIELD = "version";
+	static final String VERSION_FIELD = "version";
 
 	private final Path dataFolder;
 	private final Class<? extends Config> configClass;
@@ -75,18 +76,29 @@ public class SimpleConfig<Config> {
 		return null;
 	}
 
-	private List<String> getComments(Field field) {
+	private void setComments(ConfigurationSection config, Field field, String fieldName) {
+		List<String> comments = new ArrayList<>();
+		List<String> inlineComments = new ArrayList<>();
+
 		SimpleCommentList commentList = field.getAnnotation(SimpleCommentList.class);
 		if (commentList != null) {
-			return Stream.of(commentList.value()).map(SimpleComment::value).toList();
+			for (SimpleComment comment : commentList.value()) {
+				(comment.inline() ? inlineComments : comments).add(comment.value());
+			}
 		}
 
 		SimpleComment comment = field.getAnnotation(SimpleComment.class);
 		if (comment != null) {
-			return List.of(comment.value());
+			(comment.inline() ? inlineComments : comments).add(comment.value());
 		}
 
-		return Collections.emptyList();
+		if (comments.size() != 0) {
+			config.setComments(fieldName, comments);
+		}
+
+		if (inlineComments.size() != 0) {
+			config.setInlineComments(fieldName, inlineComments);
+		}
 	}
 
 	public void serialize() throws Exception {
@@ -97,6 +109,10 @@ public class SimpleConfig<Config> {
 		this.serialize(config, this.instance);
 
 		Path configFilePath = this.getConfigPath();
+		if (Files.notExists(configFilePath)) {
+			Files.createFile(configFilePath);
+		}
+		
 		try (OutputStream outputStream = Files.newOutputStream(configFilePath, StandardOpenOption.CREATE);
 				OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, Charsets.UTF_8)) {
 			String configSaved = config.saveToString();
@@ -117,7 +133,7 @@ public class SimpleConfig<Config> {
 			if (newSectionName != null) {
 				// Check if version field will be overwritten in root section
 				if (newSectionName.equalsIgnoreCase(VERSION_FIELD) && config.getRoot().equals(config)) {
-					throw new IllegalArgumentException(String.format("Section name '%s' in '%s' is not allowed to use.",
+					throw new IllegalArgumentException(String.format("Section name '%s' in '%s' is not allowed to use in root section.",
 							VERSION_FIELD,
 							instance.getClass().getSimpleName()));
 				}
@@ -127,26 +143,35 @@ public class SimpleConfig<Config> {
 					newSection = config.createSection(newSectionName);
 				}
 
-				Object newSectionInstance = field.get(instance);
-				this.serialize(newSection, newSectionInstance);
 
-				List<String> comments = this.getComments(field);
-				if (comments.size() != 0) {
-					config.setInlineComments(newSectionName, comments);
+				// Create new config section when current value is null
+				Object newSectionInstance = field.get(instance);
+				if (newSectionInstance == null && fieldType.getAnnotation(SimpleSection.class) != null) {
+					try {
+						Constructor<?> constructor = fieldType.getConstructor();
+						newSectionInstance = constructor.newInstance();
+					} catch (NoSuchMethodException e) {
+						ZIPLogger.error("Unable to create config section for " + newSectionName + " in " + this.configClass.getSimpleName(), e);
+					}
 				}
+
+				if (newSectionInstance != null) {
+					this.serialize(newSection, newSectionInstance);
+				}
+
+				this.setComments(config, field, newSectionName);
 				continue;
 			}
 
-			SimpleKey fieldEntry = field.getAnnotation(SimpleKey.class);
-			if (fieldEntry == null) {
+			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
+			if (translatorKey == null) {
 				// TODO log that the no entry exists for current field
 				continue;
 			}
 
 			// Check if version field will be overwritten in root section
-			String fieldName = fieldEntry.value();
-			if (fieldName.equalsIgnoreCase(VERSION_FIELD) && config.getRoot().equals(config)) {
-				throw new IllegalArgumentException(String.format("Field name '%s' in '%s' is not allowed to use.",
+			if (translatorKey.isVersionInRoot(config)) {
+				throw new IllegalArgumentException(String.format("Field name '%s' in '%s' is not allowed to use in root section.",
 						VERSION_FIELD,
 						instance.getClass().getSimpleName()));
 			}
@@ -154,20 +179,24 @@ public class SimpleConfig<Config> {
 			Object value = field.get(instance);
 			if (value != null) {
 				SimpleTranslator<Object, Annotation> translator = (SimpleTranslator<Object, Annotation>) SimpleTranslatorRegistry.getTranslator(fieldType);
-				translator.serialize(config, fieldEntry, value);
+				translator.serialize(config, translatorKey, value);
 			} else {
-				config.set(fieldName, ""); // TODO test if value is set to null when serialized!
+				config.set(translatorKey.name(), ""); // TODO test if value is set to null when serialized!
 			}
 
-			List<String> comments = this.getComments(field);
-			if (comments.size() != 0) {
-				config.setInlineComments(fieldName, comments);
-			}
+			this.setComments(config, field, translatorKey.name());
 		}
 	}
 
 	public Config deserialize() throws Exception {
 		Path configFilePath = this.getConfigPath();
+
+		if (Files.notExists(configFilePath)) {
+			this.instance = this.deserialize(new YamlConfiguration(), this.configClass);
+//			return this.instance;
+			System.out.println(this.instance);
+			this.serialize();
+		}
 
 		YamlConfiguration config = new YamlConfiguration();
 		try (InputStream inputStream = Files.newInputStream(configFilePath, StandardOpenOption.CREATE);
@@ -178,11 +207,12 @@ public class SimpleConfig<Config> {
 		int version = config.getInt(VERSION_FIELD, -1);
 		if (version == -1) {
 			throw new IllegalStateException("Unable to detect config version!");
+		} else if (version < this.rootSection.version()) {
+			throw new IllegalStateException("Config version is " + version + " and is higher then the currently one (" + this.rootSection.version() + ")");
 		}
 		// TODO handle migration
 
 		this.instance = this.deserialize(config, this.configClass);
-
 		return this.instance;
 	}
 
@@ -197,7 +227,6 @@ public class SimpleConfig<Config> {
 			if (field.getAnnotation(SimpleUnused.class) != null) {
 				continue;
 			}
-//			field.get
 
 			Class<?> fieldType = field.getType();
 
@@ -208,31 +237,48 @@ public class SimpleConfig<Config> {
 					newSection = config.createSection(newSectionName);
 				}
 
-				this.deserialize(newSection, fieldType);
+				Object newSectionInstance = this.deserialize(newSection, fieldType);
+				field.set(instance, newSectionInstance);
 				continue;
 			}
-			
-			SimpleKey fieldEntry = field.getAnnotation(SimpleKey.class);
-			if (fieldEntry == null) {
-				// TODO log that the no entry exists for current field
+			System.out.println(configClass.getSimpleName() + " " + field.getName());
+
+			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
+			if (translatorKey == null) {
+				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + configClass.getSimpleName() + ")");
 				continue;
 			}
 
 			SimpleTranslator<Object, Require> translator = (SimpleTranslator<Object, Require>) SimpleTranslatorRegistry.getTranslator(fieldType);
-			Object value = translator.deserialize(config, fieldEntry);
-			if (value != null) {
-				Class<? extends Object> requires = translator.requires();
-				if (requires != null) {
-					Require requiresAnnotation = field.getAnnotation((Class<Require>) requires);
-					Object result = translator.requirement(fieldEntry, value, requiresAnnotation);
+			Object value = translator.deserialize(config, translatorKey);
 
-					if (!result.equals(value)) {
-						System.out.println("Invalid input! TODO"); // TODO log that.
+			Class<? extends Object> requires = translator.requires();
+			Require requiresAnnotation = null;
+			if (requires != null) {
+				requiresAnnotation = field.getAnnotation((Class<Require>) requires);
+			}
+
+			boolean setDefaultValue = value == null;
+			if (value != null) {
+				if (requiresAnnotation != null) {
+					Object result = translator.requirement(translatorKey, value, requiresAnnotation);
+					if (result != null && !result.equals(value)) {
+						ZIPLogger.warn("Unsing default value (" + result + ") for key \"" + translatorKey.name() + "\" in section " + config.getName());
 					}
-					value = result;
+					field.set(instance, result);
+					continue;
 				}
-				
-				field.set(instance, value);
+
+				if (field.getGenericType().getTypeName().equals(value.getClass().getTypeName())) {
+					field.set(instance, value);
+					continue;
+				} else {
+					setDefaultValue = true;
+				}
+			}
+
+			if (setDefaultValue && requiresAnnotation != null) {
+				field.set(instance, translator.defaultValue(translatorKey, requiresAnnotation));
 			}
 		}
 

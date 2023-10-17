@@ -65,6 +65,9 @@ public class LinkCommand extends BackpackSubCommand {
 		} else if (!player.getInventory().contains(linking)) {
 			this.messageConfig.send(player, MessageKey.YouNeedToHoldBothBackpacksInYouInventory);
 			return;
+		} else if (!linkingBackpack.isValid() || !backpack.isValid()) {
+			this.messageConfig.send(player, MessageKey.BothBackpacksNeedToBeTheSameType);
+			return;
 		} else if (!linkingBackpack.getType().getUniqueName().equals(backpack.getType().getUniqueName())) {
 			this.messageConfig.send(player, MessageKey.BothBackpacksNeedToBeTheSameType);
 			return;

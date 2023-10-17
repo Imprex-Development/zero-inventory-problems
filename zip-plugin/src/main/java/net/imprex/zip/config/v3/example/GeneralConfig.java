@@ -22,14 +22,14 @@ public class GeneralConfig {
 	@SimpleComment(" ")
 	@SimpleComment("Just added some space")
 	@SimpleComment(" ")
-	@SimpleInteger(min = 10, max = 100)
-	@SimpleKey("Key")
-	public int testCount = 60;
+	@SimpleInteger(min = 10, max = 100, defaultValue = 60)
+	@SimpleKey("testCountKey xD")
+	public int testCount;
 
 	@SimpleComment("Set your username")
-	@SimpleString(regex = "([A-Z])")
+	@SimpleString(regex = "[A-Z]*", defaultValue = "ingrim4")
 	@SimpleKey("username")
-	public String username = "Ingrim";
+	public String username;
 
 	@SimpleUnused
 	public String unsuedValue;
