@@ -17,13 +17,13 @@ public class ListTranslator implements SimpleTranslator<List<?>, Annotation> {
 	}
 
 	@Override
-	public List<?> deserialize(ConfigurationSection config, SimpleTranslatorKey key) {
-		return config.getList(key.name(), new ArrayList<>());
+	public List<?> deserialize(ConfigurationSection config, SimpleTranslatorKey key, List<?> defaultValue) {
+		return config.getList(key.name(), defaultValue);
 	}
 
 	@Override
-	public List<?> defaultValue(SimpleTranslatorKey key, Annotation requirement) {
-		return new ArrayList<>();
+	public List<?> defaultValue(SimpleTranslatorKey key, List<?> initialValue, Annotation requirement) {
+		return initialValue != null ? initialValue : new ArrayList<>();
 	}
 
 	@SuppressWarnings("unchecked")

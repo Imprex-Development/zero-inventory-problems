@@ -16,13 +16,13 @@ public class ObjectTranslator implements SimpleTranslator<Object, Annotation> {
 	}
 
 	@Override
-	public Object deserialize(ConfigurationSection config, SimpleTranslatorKey key) {
-		return config.get(key.name(), null);
+	public Object deserialize(ConfigurationSection config, SimpleTranslatorKey key, Object defaultValue) {
+		return config.get(key.name(), defaultValue);
 	}
 
 	@Override
-	public Object defaultValue(SimpleTranslatorKey key, Annotation requirement) {
-		return null;
+	public Object defaultValue(SimpleTranslatorKey key, Object initialValue, Annotation requirement) {
+		return initialValue;
 	}
 
 	@Override

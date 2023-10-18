@@ -1,5 +1,7 @@
 package net.imprex.zip.config.v3.example;
 
+import java.util.List;
+
 import net.imprex.zip.config.v3.SimpleComment;
 import net.imprex.zip.config.v3.SimpleKey;
 import net.imprex.zip.config.v3.SimpleMigration;
@@ -8,7 +10,7 @@ import net.imprex.zip.config.v3.SimpleUnused;
 import net.imprex.zip.config.v3.require.SimpleInteger;
 import net.imprex.zip.config.v3.require.SimpleString;
 
-@SimpleSection(name = "general")
+@SimpleSection
 public class GeneralConfig {
 
 	@SimpleMigration(beforeName = "checkingForNewerVersions", beforeVersion = 1, beforeSection = ExampleConfig.class)
@@ -27,10 +29,13 @@ public class GeneralConfig {
 	public int testCount;
 
 	@SimpleComment("Set your username")
-	@SimpleString(regex = "[A-Z]*", defaultValue = "ingrim4")
+	@SimpleString(regex = "[A-Z]*", defaultValue = "INGRIM")
 	@SimpleKey("username")
 	public String username;
 
 	@SimpleUnused
 	public String unsuedValue;
+
+	@SimpleKey
+	public List<String> randomList = List.of("Just", "Some", "Random", "Input");
 }

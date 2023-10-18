@@ -17,8 +17,8 @@ public class StringTranslator implements SimpleTranslator<String, SimpleString> 
 	}
 
 	@Override
-	public String deserialize(ConfigurationSection config, SimpleTranslatorKey key) {
-		return config.getString(key.name());
+	public String deserialize(ConfigurationSection config, SimpleTranslatorKey key, String defaultValue) {
+		return config.getString(key.name(), defaultValue);
 	}
 
 	@Override
@@ -36,12 +36,12 @@ public class StringTranslator implements SimpleTranslator<String, SimpleString> 
 	}
 
 	@Override
-	public String defaultValue(SimpleTranslatorKey key, SimpleString requirement) {
-		return requirement.defaultValue();
+	public String defaultValue(SimpleTranslatorKey key, String initialValue, SimpleString requirement) {
+		return requirement != null ? requirement.defaultValue() : initialValue;
 	}
 
 	@Override
-	public Class<SimpleString> requires() {
+	public Class<SimpleString> require() {
 		return SimpleString.class;
 	}
 

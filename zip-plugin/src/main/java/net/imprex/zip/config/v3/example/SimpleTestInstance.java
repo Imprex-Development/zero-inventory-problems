@@ -12,5 +12,6 @@ public class SimpleTestInstance {
 		System.out.println("tested: " + loaded.tested);
 		System.out.println("general.username: " + loaded.general.username);
 		System.out.println("general.testCount: " + loaded.general.testCount);
+		System.out.println("general.testCount: " + String.join(", ", loaded.general.randomList));
 	}
 }

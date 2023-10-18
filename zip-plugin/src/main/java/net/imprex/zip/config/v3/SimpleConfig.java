@@ -62,18 +62,8 @@ public class SimpleConfig<Config> {
 		return filePath;
 	}
 
-	private String getSectionName(Class<?> configClass) {
-		SimpleSection section = configClass.getAnnotation(SimpleSection.class);
-		if (section != null) {
-			return section.name();
-		}
-
-		SimpleSectionRoot rootSection = configClass.getAnnotation(SimpleSectionRoot.class);
-		if (rootSection != null) {
-			return rootSection.name();
-		}
-
-		return null;
+	private boolean isSection(Class<?> configClass) {
+		return configClass.getAnnotation(SimpleSection.class) != null || configClass.getAnnotation(SimpleSectionRoot.class) != null;
 	}
 
 	private void setComments(ConfigurationSection config, Field field, String fieldName) {
@@ -121,16 +111,21 @@ public class SimpleConfig<Config> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void serialize(ConfigurationSection config, Object instance) throws Exception {
+	private <Type, Require extends Annotation> void serialize(ConfigurationSection config, Object instance) throws Exception {
 		for (Field field : instance.getClass().getDeclaredFields()) {
 			if (field.getAnnotation(SimpleUnused.class) != null) {
 				continue;
 			}
 
-			Class<?> fieldType = field.getType();
+			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
+			if (translatorKey == null) {
+				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + this.configClass.getSimpleName() + ")");
+				continue;
+			}
 
-			String newSectionName = this.getSectionName(fieldType);
-			if (newSectionName != null) {
+			Class<?> fieldType = field.getType();
+			if (this.isSection(fieldType)) {
+				String newSectionName = translatorKey.name();
 				// Check if version field will be overwritten in root section
 				if (newSectionName.equalsIgnoreCase(VERSION_FIELD) && config.getRoot().equals(config)) {
 					throw new IllegalArgumentException(String.format("Section name '%s' in '%s' is not allowed to use in root section.",
@@ -163,12 +158,6 @@ public class SimpleConfig<Config> {
 				continue;
 			}
 
-			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
-			if (translatorKey == null) {
-				// TODO log that the no entry exists for current field
-				continue;
-			}
-
 			// Check if version field will be overwritten in root section
 			if (translatorKey.isVersionInRoot(config)) {
 				throw new IllegalArgumentException(String.format("Field name '%s' in '%s' is not allowed to use in root section.",
@@ -176,14 +165,17 @@ public class SimpleConfig<Config> {
 						instance.getClass().getSimpleName()));
 			}
 
-			Object value = field.get(instance);
-			if (value != null) {
-				SimpleTranslator<Object, Annotation> translator = (SimpleTranslator<Object, Annotation>) SimpleTranslatorRegistry.getTranslator(fieldType);
-				translator.serialize(config, translatorKey, value);
-			} else {
-				config.set(translatorKey.name(), ""); // TODO test if value is set to null when serialized!
+			SimpleTranslator<Type, Annotation> translator = (SimpleTranslator<Type, Annotation>) SimpleTranslatorRegistry.getTranslator(fieldType);
+			Class<? extends Object> require = translator.require();
+			Require requireAnnotation = null;
+			if (require != null) {
+				requireAnnotation = field.getAnnotation((Class<Require>) require);
 			}
 
+			Type initialValue = (Type) field.get(instance);
+			Type defaultValue = (Type) translator.defaultValue(translatorKey, initialValue, requireAnnotation);
+
+			translator.serialize(config, translatorKey, defaultValue);
 			this.setComments(config, field, translatorKey.name());
 		}
 	}
@@ -193,8 +185,6 @@ public class SimpleConfig<Config> {
 
 		if (Files.notExists(configFilePath)) {
 			this.instance = this.deserialize(new YamlConfiguration(), this.configClass);
-//			return this.instance;
-			System.out.println(this.instance);
 			this.serialize();
 		}
 
@@ -208,7 +198,7 @@ public class SimpleConfig<Config> {
 		if (version == -1) {
 			throw new IllegalStateException("Unable to detect config version!");
 		} else if (version < this.rootSection.version()) {
-			throw new IllegalStateException("Config version is " + version + " and is higher then the currently one (" + this.rootSection.version() + ")");
+			throw new IllegalStateException("Config version is higher then the currently one! (config: " + version + " current:" + this.rootSection.version() + ")");
 		}
 		// TODO handle migration
 
@@ -228,10 +218,16 @@ public class SimpleConfig<Config> {
 				continue;
 			}
 
-			Class<?> fieldType = field.getType();
+			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
+			if (translatorKey == null) {
+				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + this.configClass.getSimpleName() + ")");
+				continue;
+			}
 
-			String newSectionName = this.getSectionName(fieldType);
-			if (newSectionName != null) {
+
+			Class<?> fieldType = field.getType();
+			if (this.isSection(fieldType)) {
+				String newSectionName = translatorKey.name();
 				ConfigurationSection newSection = config.getConfigurationSection(newSectionName);
 				if (newSection == null) {
 					newSection = config.createSection(newSectionName);
@@ -241,27 +237,21 @@ public class SimpleConfig<Config> {
 				field.set(instance, newSectionInstance);
 				continue;
 			}
-			System.out.println(configClass.getSimpleName() + " " + field.getName());
 
-			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
-			if (translatorKey == null) {
-				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + configClass.getSimpleName() + ")");
-				continue;
+			SimpleTranslator<Type, Require> translator = (SimpleTranslator<Type, Require>) SimpleTranslatorRegistry.getTranslator(fieldType);
+			Class<? extends Object> require = translator.require();
+			Require requireAnnotation = null;
+			if (require != null) {
+				requireAnnotation = field.getAnnotation((Class<Require>) require);
 			}
 
-			SimpleTranslator<Object, Require> translator = (SimpleTranslator<Object, Require>) SimpleTranslatorRegistry.getTranslator(fieldType);
-			Object value = translator.deserialize(config, translatorKey);
+			Type initialValue = (Type) field.get(instance);
+			Type defaultValue = translator.defaultValue(translatorKey, initialValue, requireAnnotation);
+			Type value = translator.deserialize(config, translatorKey, defaultValue);
 
-			Class<? extends Object> requires = translator.requires();
-			Require requiresAnnotation = null;
-			if (requires != null) {
-				requiresAnnotation = field.getAnnotation((Class<Require>) requires);
-			}
-
-			boolean setDefaultValue = value == null;
 			if (value != null) {
-				if (requiresAnnotation != null) {
-					Object result = translator.requirement(translatorKey, value, requiresAnnotation);
+				if (requireAnnotation != null) {
+					Object result = translator.requirement(translatorKey, value, requireAnnotation);
 					if (result != null && !result.equals(value)) {
 						ZIPLogger.warn("Unsing default value (" + result + ") for key \"" + translatorKey.name() + "\" in section " + config.getName());
 					}
@@ -269,17 +259,14 @@ public class SimpleConfig<Config> {
 					continue;
 				}
 
-				if (field.getGenericType().getTypeName().equals(value.getClass().getTypeName())) {
+				if (field.getType().isAssignableFrom(value.getClass())) {
 					field.set(instance, value);
 					continue;
-				} else {
-					setDefaultValue = true;
 				}
 			}
 
-			if (setDefaultValue && requiresAnnotation != null) {
-				field.set(instance, translator.defaultValue(translatorKey, requiresAnnotation));
-			}
+			ZIPLogger.warn("Unsing default value (" + defaultValue + ") for key \"" + translatorKey.name() + "\" in section " + config.getName());
+			field.set(instance, defaultValue);
 		}
 
 		return instance;

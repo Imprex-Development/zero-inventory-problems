@@ -9,15 +9,14 @@ public interface SimpleTranslator<Value, Requirement extends Annotation> {
 
 	public void serialize(ConfigurationSection config, SimpleTranslatorKey key, Value value);
 
-	public Value deserialize(ConfigurationSection config, SimpleTranslatorKey key);
+	public Value deserialize(ConfigurationSection config, SimpleTranslatorKey key, Value defaultValue);
+
+	public Value defaultValue(SimpleTranslatorKey key, Value initialValue, Requirement requirement);
 
 	public default Value requirement(SimpleTranslatorKey key, Value value, Requirement requirement) {
 		return null;
 	}
-
-	public Value defaultValue(SimpleTranslatorKey key, Requirement requirement);
-
-	public default Class<Requirement> requires() {
+	public default Class<Requirement> require() {
 		return null;
 	}
 

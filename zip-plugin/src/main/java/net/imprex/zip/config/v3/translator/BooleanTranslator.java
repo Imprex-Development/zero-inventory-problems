@@ -16,13 +16,13 @@ public class BooleanTranslator implements SimpleTranslator<Boolean, Annotation> 
 	}
 
 	@Override
-	public Boolean deserialize(ConfigurationSection config, SimpleTranslatorKey key) {
-		return config.getBoolean(key.name(), false);
+	public Boolean deserialize(ConfigurationSection config, SimpleTranslatorKey key, Boolean defaultValue) {
+		return config.getBoolean(key.name(), defaultValue);
 	}
 
 	@Override
-	public Boolean defaultValue(SimpleTranslatorKey key, Annotation requirement) {
-		return false;
+	public Boolean defaultValue(SimpleTranslatorKey key, Boolean initialValue, Annotation requirement) {
+		return initialValue != null ? initialValue : false;
 	}
 
 	@Override

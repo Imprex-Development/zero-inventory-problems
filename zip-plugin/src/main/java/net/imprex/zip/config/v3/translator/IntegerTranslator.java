@@ -16,8 +16,8 @@ public class IntegerTranslator implements SimpleTranslator<Integer, SimpleIntege
 	}
 
 	@Override
-	public Integer deserialize(ConfigurationSection config, SimpleTranslatorKey key) {
-		return config.getInt(key.name(), 0);
+	public Integer deserialize(ConfigurationSection config, SimpleTranslatorKey key, Integer defaultValue) {
+		return config.getInt(key.name(), defaultValue);
 	}
 
 	@Override
@@ -28,12 +28,12 @@ public class IntegerTranslator implements SimpleTranslator<Integer, SimpleIntege
 	}
 
 	@Override
-	public Integer defaultValue(SimpleTranslatorKey key, SimpleInteger requirement) {
-		return requirement.defaultValue();
+	public Integer defaultValue(SimpleTranslatorKey key, Integer initialValue, SimpleInteger requirement) {
+		return requirement != null ? requirement.defaultValue() : initialValue;
 	}
 
 	@Override
-	public Class<SimpleInteger> requires() {
+	public Class<SimpleInteger> require() {
 		return SimpleInteger.class;
 	}
 
