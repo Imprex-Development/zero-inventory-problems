@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.config.GeneralConfig;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -26,15 +26,15 @@ public class LoreCommand extends BackpackSubCommand {
 	private final String syntaxMessage;
 
 	public LoreCommand(BackpackPlugin plugin) {
-		super(plugin, MessageKey.CommandHelpLore, "zeroinventoryproblems.lore", "lore");
-		this.generalConfig = plugin.getBackpackConfig().general();
+		super(plugin, Message.CommandHelpLore, "zeroinventoryproblems.lore", "lore");
+		this.generalConfig = plugin.getBackpackConfig();
 
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpStart));
+		stringBuilder.append(this.translation.getWithoutPrefix(Message.CommandHelpStart));
 		stringBuilder.append("\n");
-		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpLoreSyntax));
+		stringBuilder.append(this.translation.getWithoutPrefix(Message.CommandHelpLoreSyntax));
 		stringBuilder.append("\n");
-		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpEnd));
+		stringBuilder.append(this.translation.getWithoutPrefix(Message.CommandHelpEnd));
 		this.syntaxMessage = stringBuilder.toString();
 	}
 
@@ -53,7 +53,7 @@ public class LoreCommand extends BackpackSubCommand {
 		PlayerInventory playerInventory = player.getInventory();
 		ItemStack item = playerInventory.getItemInMainHand();
 		if (item == null || !this.backpackHandler.isBackpack(item)) {
-			this.messageConfig.send(sender, MessageKey.YouNeedToHoldABackpackInYourHand);
+			this.translation.send(sender, Message.YouNeedToHoldABackpackInYourHand);
 			return;
 		}
 
@@ -86,7 +86,7 @@ public class LoreCommand extends BackpackSubCommand {
 		}
 
 		if (lore.size() + 1 > this.generalConfig.maxLoreCount) {
-			this.messageConfig.send(sender, MessageKey.MaxLoreCountReached, this.generalConfig.maxLoreCount);
+			this.translation.send(sender, Message.MaxLoreCountReached, this.generalConfig.maxLoreCount);
 			return false;
 		}
 
@@ -96,7 +96,7 @@ public class LoreCommand extends BackpackSubCommand {
 		}
 		message = ChatColor.translateAlternateColorCodes('&', message);
 		lore.add(message);
-		this.messageConfig.send(sender, MessageKey.LoreLineCreate, lore.size());
+		this.translation.send(sender, Message.LoreLineCreate, lore.size());
 		return true;
 	}
 
@@ -117,7 +117,7 @@ public class LoreCommand extends BackpackSubCommand {
 		}
 		message = ChatColor.translateAlternateColorCodes('&', message);
 		lore.set(line - 1,  message);
-		this.messageConfig.send(sender, MessageKey.LoreLineChange, line);
+		this.translation.send(sender, Message.LoreLineChange, line);
 		return true;
 	}
 
@@ -133,22 +133,22 @@ public class LoreCommand extends BackpackSubCommand {
 		}
 
 		lore.remove(line - 1);
-		this.messageConfig.send(sender, MessageKey.LoreLineDelete, line);
+		this.translation.send(sender, Message.LoreLineDelete, line);
 		return true;
 	}
 
 	public boolean handleList(CommandSender sender, String[] args, List<String> lore) {
 		TextComponent component = new TextComponent();
-		component.addExtra(this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreStart));
+		component.addExtra(this.translation.getWithoutPrefix(Message.CommandLoreStart));
 		component.addExtra("\n");
 
 		for (int line = 1; line < lore.size() + 1; line++) {
 			String entry = lore.get(line - 1);
-			String messageContent = this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreContent, line, entry);
-			String messageEdit = this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreButtonEdit);
-			String messageEditHover = this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreButtonEditHover);
-			String messageDelete = this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreButtonDelete);
-			String messageDeleteHover = this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreButtonDeleteHover);
+			String messageContent = this.translation.getWithoutPrefix(Message.CommandLoreContent, line, entry);
+			String messageEdit = this.translation.getWithoutPrefix(Message.CommandLoreButtonEdit);
+			String messageEditHover = this.translation.getWithoutPrefix(Message.CommandLoreButtonEditHover);
+			String messageDelete = this.translation.getWithoutPrefix(Message.CommandLoreButtonDelete);
+			String messageDeleteHover = this.translation.getWithoutPrefix(Message.CommandLoreButtonDeleteHover);
 
 			TextComponent content = new TextComponent(messageContent);
 			content.addExtra("\n");
@@ -172,7 +172,7 @@ public class LoreCommand extends BackpackSubCommand {
 			component.addExtra("\n");
 		}
 
-		component.addExtra(this.messageConfig.getWithoutPrefix(MessageKey.CommandLoreEnd));
+		component.addExtra(this.translation.getWithoutPrefix(Message.CommandLoreEnd));
 		sender.spigot().sendMessage(component);
 		return false;
 	}
@@ -182,12 +182,12 @@ public class LoreCommand extends BackpackSubCommand {
 		try {
 			line = Integer.valueOf(argument);
 		} catch (NumberFormatException e) {
-			this.messageConfig.send(sender, MessageKey.PleaseEnterANumber);
+			this.translation.send(sender, Message.PleaseEnterANumber);
 			return -1;
 		}
 
 		if (line < min || line > max) {
-			this.messageConfig.send(sender, MessageKey.EnterANumberBetweenArgsAndArgs, min, max);
+			this.translation.send(sender, Message.EnterANumberBetweenArgsAndArgs, min, max);
 			return -1;
 		}
 

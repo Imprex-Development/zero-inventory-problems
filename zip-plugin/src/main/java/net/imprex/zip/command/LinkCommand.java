@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemStack;
 
 import net.imprex.zip.Backpack;
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
 
 public class LinkCommand extends BackpackSubCommand {
 
 	private final Map<Player, ItemStack> linking = new WeakHashMap<>();
 
 	public LinkCommand(BackpackPlugin plugin) {
-		super(plugin, MessageKey.CommandHelpLink, "zeroinventoryproblems.link", "link");
+		super(plugin, Message.CommandHelpLink, "zeroinventoryproblems.link", "link");
 	}
 
 	@Override
@@ -30,9 +30,9 @@ public class LinkCommand extends BackpackSubCommand {
 
 		if (args.length > 0 && args[0].equalsIgnoreCase("cancel")) {
 			if (this.linking.remove(player) != null)  {
-				this.messageConfig.send(player, MessageKey.YourBackpackLinkRequestWasCancelled);
+				this.translation.send(player, Message.YourBackpackLinkRequestWasCancelled);
 			} else {
-				this.messageConfig.send(player, MessageKey.YouNeedToLinkABackpackFirst);
+				this.translation.send(player, Message.YouNeedToLinkABackpackFirst);
 			}
 			return;
 		}
@@ -46,38 +46,38 @@ public class LinkCommand extends BackpackSubCommand {
 		ItemStack linking = this.linking.remove(player);
 		if (linking == null) {
 			this.linking.put(player, item);
-			this.messageConfig.send(player, MessageKey.YouCanNowHoldTheBackpackWhichShouldBeLinked);
+			this.translation.send(player, Message.YouCanNowHoldTheBackpackWhichShouldBeLinked);
 			return;
 		}
 
 		Backpack linkingBackpack = this.backpackHandler.getBackpack(linking);
 		if (linkingBackpack == null) {
-			this.messageConfig.send(player, MessageKey.ThisShouldNotHappenedPleaseTryToLinkAgain);
+			this.translation.send(player, Message.ThisShouldNotHappenedPleaseTryToLinkAgain);
 			return;
 		}
 
 		if (backpack.hasUnuseableContent()) {
-			this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
+			this.translation.send(player, Message.YouHaveUnusableItemsUsePickup);
 			return;
 		} else if (backpack.hasContent()) {
-			this.messageConfig.send(player, MessageKey.YourBackpackIsNotEmpty);
+			this.translation.send(player, Message.YourBackpackIsNotEmpty);
 			return;
 		} else if (!player.getInventory().contains(linking)) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldBothBackpacksInYouInventory);
+			this.translation.send(player, Message.YouNeedToHoldBothBackpacksInYouInventory);
 			return;
 		} else if (!linkingBackpack.isValid() || !backpack.isValid()) {
-			this.messageConfig.send(player, MessageKey.BothBackpacksNeedToBeTheSameType);
+			this.translation.send(player, Message.BothBackpacksNeedToBeTheSameType);
 			return;
 		} else if (!linkingBackpack.getType().getUniqueName().equals(backpack.getType().getUniqueName())) {
-			this.messageConfig.send(player, MessageKey.BothBackpacksNeedToBeTheSameType);
+			this.translation.send(player, Message.BothBackpacksNeedToBeTheSameType);
 			return;
 		} else if (linkingBackpack.equals(backpack)) {
-			this.messageConfig.send(player, MessageKey.ThisBackpackIsAlreadyLinkedThoThat);
+			this.translation.send(player, Message.ThisBackpackIsAlreadyLinkedThoThat);
 			return;
 		}
 
 		linkingBackpack.applyOnItem(item);
-		this.messageConfig.send(player, MessageKey.YourBackpackIsNowLinked);
+		this.translation.send(player, Message.YourBackpackIsNowLinked);
 	}
 
 	@Override

@@ -11,8 +11,7 @@ import org.bukkit.Bukkit;
 import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.api.ZIPRegistry;
 import net.imprex.zip.config.BackpackConfig;
-import net.imprex.zip.config.BackpackTypeConfig;
-import net.imprex.zip.config.BackpackTypeListConfig;
+import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackRegistry implements ZIPRegistry {
@@ -26,10 +25,9 @@ public class BackpackRegistry implements ZIPRegistry {
 	}
 
 	public void register() {
-		BackpackConfig configManager = this.plugin.getBackpackConfig();
-		BackpackTypeListConfig typeListConfig = configManager.typeList();
+		GeneralConfig config = this.plugin.getBackpackConfig();
 
-		for (BackpackTypeConfig typeConfig : typeListConfig.type) {
+		for (BackpackConfig typeConfig : config.type.values()) {
 			BackpackType backpackType = new BackpackType(this.plugin, typeConfig);
 			this.backpackType.put(typeConfig.uniqueName.toLowerCase(Locale.ROOT), backpackType);
 

@@ -1,19 +1,17 @@
 package net.imprex.zip.config.v3;
 
-import java.lang.reflect.Field;
-
 import org.bukkit.configuration.ConfigurationSection;
 
 public interface SimpleTranslatorKey {
 
-	static SimpleTranslatorKey key(Field field) {
-		SimpleKey key = field.getAnnotation(SimpleKey.class);
+	static SimpleTranslatorKey key(SimpleField<?> field) {
+		SimpleKey key = field.getKey();
 		if (key == null) {
 			return null;
 		}
 
 		String value = key.value().trim();
-		return () -> value.isBlank() ? field.getName() : value;
+		return () -> value.isBlank() ? field.getFieldName() : value;
 	}
 
 	String name();

@@ -14,24 +14,24 @@ import net.imprex.zip.Backpack;
 import net.imprex.zip.BackpackHandler;
 import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.NmsInstance;
-import net.imprex.zip.config.MessageConfig;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.TranslationLoader;
+import net.imprex.zip.config.translation.Message;
 
 public abstract class BackpackSubCommand {
 
 	protected final BackpackPlugin plugin;
 	protected final BackpackHandler backpackHandler;
-	protected final MessageConfig messageConfig;
+	protected final TranslationLoader translation;
 
-	private final MessageKey helpLine;
+	private final Message helpLine;
 	private final String permission;
 
 	private final Set<String> aliases = Collections.newSetFromMap(new HashMap<>());
 
-	public BackpackSubCommand(BackpackPlugin plugin, MessageKey helpLine, String permission, String command, String... aliases) {
+	public BackpackSubCommand(BackpackPlugin plugin, Message helpLine, String permission, String command, String... aliases) {
 		this.plugin = plugin;
 		this.backpackHandler = plugin.getBackpackHandler();
-		this.messageConfig = plugin.getBackpackConfig().message();
+		this.translation = plugin.getTranslationLoader();
 		this.helpLine = helpLine;
 		this.permission = permission;
 
@@ -45,7 +45,7 @@ public abstract class BackpackSubCommand {
 
 	public Player isPlayer(CommandSender sender) {
 		if (!(sender instanceof Player)) {
-			sender.sendMessage(this.messageConfig.get(MessageKey.NotAConsoleCommand));
+			sender.sendMessage(this.translation.get(Message.NotAConsoleCommand));
 			return null;
 		}
 
@@ -55,13 +55,13 @@ public abstract class BackpackSubCommand {
 	public Backpack checkIfHoldingBackpack(Player player) {
 		ItemStack item = player.getInventory().getItemInMainHand();
 		if (item == null || NmsInstance.isAir(item.getType())) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldABackpackInYourHand);
+			this.translation.send(player, Message.YouNeedToHoldABackpackInYourHand);
 			return null;
 		}
 
 		Backpack backpack = this.backpackHandler.getBackpack(item);
 		if (backpack == null) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldABackpackInYourHand);
+			this.translation.send(player, Message.YouNeedToHoldABackpackInYourHand);
 			return null;
 		}
 		return backpack;
@@ -83,7 +83,7 @@ public abstract class BackpackSubCommand {
 		return this.permission;
 	}
 
-	public MessageKey getHelpLine() {
+	public Message getHelpLine() {
 		return this.helpLine;
 	}
 }

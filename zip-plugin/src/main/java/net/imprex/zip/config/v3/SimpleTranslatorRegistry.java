@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import net.imprex.zip.config.v3.translator.BooleanTranslator;
 import net.imprex.zip.config.v3.translator.IntegerTranslator;
 import net.imprex.zip.config.v3.translator.ListTranslator;
+import net.imprex.zip.config.v3.translator.MapTranslator;
 import net.imprex.zip.config.v3.translator.ObjectTranslator;
 import net.imprex.zip.config.v3.translator.StringTranslator;
 
@@ -19,8 +20,9 @@ public class SimpleTranslatorRegistry {
 	static {
 		registerTranslator(new BooleanTranslator());
 		registerTranslator(new IntegerTranslator());
-		registerTranslator(new StringTranslator());
 		registerTranslator(new ListTranslator());
+		registerTranslator(new MapTranslator());
+		registerTranslator(new StringTranslator());
 	}
 
 	public static void registerTranslator(SimpleTranslator<?, ?> converter) {
@@ -30,11 +32,12 @@ public class SimpleTranslatorRegistry {
 	}
 
 	@SuppressWarnings("unchecked") // TODO find a better way then using unchecked
-	public static <V, R extends Annotation> SimpleTranslator<V, R> getTranslator(Class<V> classType) {
-		SimpleTranslator<?, ?> converter = TRANSLATOR_LIST.get(classType);
+	public static <V, R extends Annotation> SimpleTranslator<V, R> getTranslator(SimpleField<?> field) {
+		Class<?> fieldClass = field.getType();
+		SimpleTranslator<?, ?> converter = TRANSLATOR_LIST.get(fieldClass);
 		if (converter == null) {
 			for (Entry<Class<?>, SimpleTranslator<?, ?>> entry : TRANSLATOR_LIST.entrySet()) {
-				if (entry.getKey().isAssignableFrom(classType)) {
+				if (entry.getKey().isAssignableFrom(fieldClass)) {
 					return (SimpleTranslator<V, R>) entry.getValue();
 				}
 			}

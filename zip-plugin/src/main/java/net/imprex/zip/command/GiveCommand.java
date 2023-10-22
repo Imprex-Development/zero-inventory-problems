@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemStack;
 import net.imprex.zip.BackpackPlugin;
 import net.imprex.zip.BackpackRegistry;
 import net.imprex.zip.BackpackType;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
 
 public class GiveCommand extends BackpackSubCommand {
 
 	private final BackpackRegistry backpackRegistry;
 
 	public GiveCommand(BackpackPlugin plugin) {
-		super(plugin, MessageKey.CommandHelpGive, "zeroinventoryproblems.give", "give");
+		super(plugin, Message.CommandHelpGive, "zeroinventoryproblems.give", "give");
 		this.backpackRegistry = plugin.getBackpackRegistry();
 	}
 
@@ -30,35 +30,35 @@ public class GiveCommand extends BackpackSubCommand {
 		}
 
 		if (args.length < 1) {
-			this.messageConfig.send(sender, MessageKey.PleaseEnterABackpackType);
+			this.translation.send(sender, Message.PleaseEnterABackpackType);
 			return;
 		}
 
 		BackpackType backpackType = this.backpackRegistry.getTypeByName(args[0]);
 		if (backpackType == null) {
-			this.messageConfig.send(sender, MessageKey.BackpackTypeWasNotFound, args[0]);
+			this.translation.send(sender, Message.BackpackTypeWasNotFound, args[0]);
 			return;
 		}
 
 		if (args.length > 1) {
 			Player target = Bukkit.getPlayer(args[1]);
 			if (target == null || !target.isOnline()) {
-				this.messageConfig.send(sender, MessageKey.NoOnlinePlayerWasFound, args[1]);
+				this.translation.send(sender, Message.NoOnlinePlayerWasFound, args[1]);
 				return;
 			}
 
 			ItemStack backpack = backpackType.createItem();
 			if (target.getInventory().addItem(backpack).isEmpty()) {
-				this.messageConfig.send(sender, MessageKey.YouHaveGivenTargetPlayerABackpack, backpackType.getUniqueName(), target.getDisplayName());
+				this.translation.send(sender, Message.YouHaveGivenTargetPlayerABackpack, backpackType.getUniqueName(), target.getDisplayName());
 			} else {
-				this.messageConfig.send(sender, MessageKey.TargetPlayerNeedMoreSpaceInYourInventory, target.getDisplayName());
+				this.translation.send(sender, Message.TargetPlayerNeedMoreSpaceInYourInventory, target.getDisplayName());
 			}
 		} else {
 			ItemStack backpack = backpackType.createItem();
 			if (player.getInventory().addItem(backpack).isEmpty()) {
-				this.messageConfig.send(sender, MessageKey.YouHaveGivenYourselfABackpack, backpackType.getUniqueName());
+				this.translation.send(sender, Message.YouHaveGivenYourselfABackpack, backpackType.getUniqueName());
 			} else {
-				this.messageConfig.send(sender, MessageKey.YouNeedMoreSpaceInYourInventory, args[0]);
+				this.translation.send(sender, Message.YouNeedMoreSpaceInYourInventory, args[0]);
 			}
 		}
 	}

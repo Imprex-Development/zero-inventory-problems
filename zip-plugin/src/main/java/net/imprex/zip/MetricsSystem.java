@@ -10,7 +10,7 @@ import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 
-import net.imprex.zip.config.BackpackConfig;
+import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.util.MathUtil;
 
 /**
@@ -64,9 +64,9 @@ public class MetricsSystem {
 		}));
 	}
 
-	public void addUsageCharts(BackpackConfig config) {
+	public void addUsageCharts(GeneralConfig config) {
 		this.metrics.addCustomChart(new SimplePie("check_for_updates", () -> {
-			return Boolean.toString(config.general().checkForUpdates);
+			return Boolean.toString(config.checkForUpdates);
 		}));
 	}
 }

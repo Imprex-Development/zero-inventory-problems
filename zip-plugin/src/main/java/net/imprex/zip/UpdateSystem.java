@@ -16,8 +16,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import net.imprex.zip.config.GeneralConfig;
-import net.imprex.zip.config.MessageConfig;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
+import net.imprex.zip.config.translation.TranslationLoader;
 import net.imprex.zip.util.ZIPLogger;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -48,7 +48,7 @@ public class UpdateSystem {
 
 	private final BackpackPlugin plugin;
 	private final GeneralConfig generalConfig;
-	private final MessageConfig messageConfig;
+	private final TranslationLoader translation;
 
 	private JsonObject releaseData;
 	private long updateCooldown = -1;
@@ -56,8 +56,8 @@ public class UpdateSystem {
 
 	public UpdateSystem(BackpackPlugin plugin) {
 		this.plugin = plugin;
-		this.generalConfig = plugin.getBackpackConfig().general();
-		this.messageConfig = plugin.getBackpackConfig().message();
+		this.generalConfig = plugin.getBackpackConfig();
+		this.translation = plugin.getTranslationLoader();
 		
 		this.checkForUpdates();
 	}
@@ -146,10 +146,10 @@ public class UpdateSystem {
 	public void checkForUpdates(Player player) {
 		Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
 			if (this.isUpdateAvailable()) {
-				BaseComponent[] components = new ComponentBuilder(String.format("%s%s ", this.messageConfig.get(MessageKey.ANewReleaseIsAvailable)))
-						.append(this.messageConfig.getWithoutPrefix(MessageKey.ClickHere))
+				BaseComponent[] components = new ComponentBuilder(String.format("%s%s ", this.translation.get(Message.ANewReleaseIsAvailable)))
+						.append(this.translation.getWithoutPrefix(Message.ClickHere))
 						.event(new ClickEvent(ClickEvent.Action.OPEN_URL, this.getHtmlUrl()))
-						.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(this.messageConfig.getWithoutPrefix(MessageKey.ClickHereToSeeTheLatestRelease)))).create();
+						.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(this.translation.getWithoutPrefix(Message.ClickHereToSeeTheLatestRelease)))).create();
 				Bukkit.getScheduler().runTask(this.plugin, () -> {
 					player.spigot().sendMessage(components);
 				});

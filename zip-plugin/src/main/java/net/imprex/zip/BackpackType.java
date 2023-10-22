@@ -5,18 +5,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.imprex.zip.api.ZIPBackpackType;
-import net.imprex.zip.config.BackpackTypeConfig;
+import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.util.ItemFactory;
 
 public class BackpackType implements ZIPBackpackType {
 
 	private final BackpackPlugin plugin;
-	private final BackpackTypeConfig config;
+	private final BackpackConfig config;
 
 	private final ItemStack item;
 	private final BackpackRecipe recipe;
 
-	public BackpackType(BackpackPlugin plugin, BackpackTypeConfig config) {
+	public BackpackType(BackpackPlugin plugin, BackpackConfig config) {
 		this.plugin = plugin;
 		this.config = config;
 

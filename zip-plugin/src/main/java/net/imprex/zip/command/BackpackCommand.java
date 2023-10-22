@@ -13,21 +13,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.config.MessageConfig;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
+import net.imprex.zip.config.translation.TranslationLoader;
 
 public class BackpackCommand implements CommandExecutor, TabCompleter {
 
 	public static final String LINE_SEPARATOR = "\n";
 
-	private final MessageConfig messageConfig;
+	private final TranslationLoader translation;
 
 	private final Map<String, BackpackSubCommand> subCommand = new HashMap<>();
 
 	private String helpMessage;
 
 	public BackpackCommand(BackpackPlugin plugin) {
-		this.messageConfig = plugin.getBackpackConfig().message();
+		this.translation = plugin.getTranslationLoader();
 
 		this.registerSubCommand(new GiveCommand(plugin));
 		this.registerSubCommand(new LinkCommand(plugin));
@@ -45,7 +45,7 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
 			BackpackSubCommand subCommand = this.subCommand.get(alias);
 			if (subCommand != null) {
 				if (!subCommand.hasPermission(sender)) {
-					this.messageConfig.send(sender, MessageKey.YouDontHaveTheFollowingPermission, subCommand.getPermission());
+					this.translation.send(sender, Message.YouDontHaveTheFollowingPermission, subCommand.getPermission());
 					return true;
 				}
 
@@ -82,15 +82,15 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
 
 	public void buildHelpMessage() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpStart));
+		stringBuilder.append(this.translation.getWithoutPrefix(Message.CommandHelpStart));
 		stringBuilder.append(LINE_SEPARATOR);
 
 		for (BackpackSubCommand subCommand : this.subCommand.values()) {
-			stringBuilder.append(this.messageConfig.getWithoutPrefix(subCommand.getHelpLine()));
+			stringBuilder.append(this.translation.getWithoutPrefix(subCommand.getHelpLine()));
 			stringBuilder.append(LINE_SEPARATOR);
 		}
 
-		stringBuilder.append(this.messageConfig.getWithoutPrefix(MessageKey.CommandHelpEnd));
+		stringBuilder.append(this.translation.getWithoutPrefix(Message.CommandHelpEnd));
 		this.helpMessage = stringBuilder.toString();
 	}
 }

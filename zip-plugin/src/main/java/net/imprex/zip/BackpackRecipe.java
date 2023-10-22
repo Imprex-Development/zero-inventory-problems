@@ -6,15 +6,15 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
-import net.imprex.zip.config.RecipeConfig;
 import net.imprex.zip.api.ZIPRecipe;
-import net.imprex.zip.config.BackpackTypeConfig;
+import net.imprex.zip.config.BackpackConfig;
+import net.imprex.zip.config.RecipeConfig;
 
 public class BackpackRecipe extends ShapedRecipe implements ZIPRecipe {
 
 	private boolean discover;
 
-	public BackpackRecipe(BackpackPlugin plugin, BackpackTypeConfig config, ItemStack item) {
+	public BackpackRecipe(BackpackPlugin plugin, BackpackConfig config, ItemStack item) {
 		super(plugin.createNamespacedKey("recipe." + config.uniqueName), item);
 		RecipeConfig recipeConfig = config.recipe;
 

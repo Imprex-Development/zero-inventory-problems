@@ -7,11 +7,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,25 +60,9 @@ public class SimpleConfig<Config> {
 		return filePath;
 	}
 
-	private boolean isSection(Class<?> configClass) {
-		return configClass.getAnnotation(SimpleSection.class) != null || configClass.getAnnotation(SimpleSectionRoot.class) != null;
-	}
-
-	private void setComments(ConfigurationSection config, Field field, String fieldName) {
-		List<String> comments = new ArrayList<>();
-		List<String> inlineComments = new ArrayList<>();
-
-		SimpleCommentList commentList = field.getAnnotation(SimpleCommentList.class);
-		if (commentList != null) {
-			for (SimpleComment comment : commentList.value()) {
-				(comment.inline() ? inlineComments : comments).add(comment.value());
-			}
-		}
-
-		SimpleComment comment = field.getAnnotation(SimpleComment.class);
-		if (comment != null) {
-			(comment.inline() ? inlineComments : comments).add(comment.value());
-		}
+	private void setComments(ConfigurationSection config, SimpleField<?> field, String fieldName) {
+		List<String> comments = field.getComments(false);
+		List<String> inlineComments = field.getComments(true);
 
 		if (comments.size() != 0) {
 			config.setComments(fieldName, comments);
@@ -112,19 +94,14 @@ public class SimpleConfig<Config> {
 
 	@SuppressWarnings("unchecked")
 	private <Type, Require extends Annotation> void serialize(ConfigurationSection config, Object instance) throws Exception {
-		for (Field field : instance.getClass().getDeclaredFields()) {
-			if (field.getAnnotation(SimpleUnused.class) != null) {
-				continue;
-			}
-
+		for (SimpleField<?> field : SimpleField.getFields(configClass)) {
 			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
 			if (translatorKey == null) {
 				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + this.configClass.getSimpleName() + ")");
 				continue;
 			}
 
-			Class<?> fieldType = field.getType();
-			if (this.isSection(fieldType)) {
+			if (field.isSection()) {
 				String newSectionName = translatorKey.name();
 				// Check if version field will be overwritten in root section
 				if (newSectionName.equalsIgnoreCase(VERSION_FIELD) && config.getRoot().equals(config)) {
@@ -140,10 +117,10 @@ public class SimpleConfig<Config> {
 
 
 				// Create new config section when current value is null
-				Object newSectionInstance = field.get(instance);
-				if (newSectionInstance == null && fieldType.getAnnotation(SimpleSection.class) != null) {
+				Object newSectionInstance = field.getField(instance);
+				if (newSectionInstance == null && field.isChildSection()) {
 					try {
-						Constructor<?> constructor = fieldType.getConstructor();
+						Constructor<?> constructor = field.getType().getConstructor();
 						newSectionInstance = constructor.newInstance();
 					} catch (NoSuchMethodException e) {
 						ZIPLogger.error("Unable to create config section for " + newSectionName + " in " + this.configClass.getSimpleName(), e);
@@ -165,14 +142,10 @@ public class SimpleConfig<Config> {
 						instance.getClass().getSimpleName()));
 			}
 
-			SimpleTranslator<Type, Annotation> translator = (SimpleTranslator<Type, Annotation>) SimpleTranslatorRegistry.getTranslator(fieldType);
-			Class<? extends Object> require = translator.require();
-			Require requireAnnotation = null;
-			if (require != null) {
-				requireAnnotation = field.getAnnotation((Class<Require>) require);
-			}
+			SimpleTranslator<Type, Require> translator = SimpleTranslatorRegistry.getTranslator(field);
+			Require requireAnnotation = field.getRequire(translator);
 
-			Type initialValue = (Type) field.get(instance);
+			Type initialValue = (Type) field.getField(instance);
 			Type defaultValue = (Type) translator.defaultValue(translatorKey, initialValue, requireAnnotation);
 
 			translator.serialize(config, translatorKey, defaultValue);
@@ -181,6 +154,10 @@ public class SimpleConfig<Config> {
 	}
 
 	public Config deserialize() throws Exception {
+		return this.deserialize(false);
+	}
+
+	public Config deserialize(boolean storeMissingValue) throws Exception {
 		Path configFilePath = this.getConfigPath();
 
 		if (Files.notExists(configFilePath)) {
@@ -203,6 +180,8 @@ public class SimpleConfig<Config> {
 		// TODO handle migration
 
 		this.instance = this.deserialize(config, this.configClass);
+		
+		// TODO storeMissingValue
 		return this.instance;
 	}
 
@@ -213,11 +192,7 @@ public class SimpleConfig<Config> {
 
 		Type instance = constructor.newInstance();
 
-		for (Field field : configClass.getDeclaredFields()) {
-			if (field.getAnnotation(SimpleUnused.class) != null) {
-				continue;
-			}
-
+		for (SimpleField<?> field : SimpleField.getFields(configClass)) {
 			SimpleTranslatorKey translatorKey = SimpleTranslatorKey.key(field);
 			if (translatorKey == null) {
 				ZIPLogger.info("No SimpleKey annotation found in section " + config.getName() + " (Class: " + this.configClass.getSimpleName() + ")");
@@ -225,27 +200,22 @@ public class SimpleConfig<Config> {
 			}
 
 
-			Class<?> fieldType = field.getType();
-			if (this.isSection(fieldType)) {
+			if (field.isSection()) {
 				String newSectionName = translatorKey.name();
 				ConfigurationSection newSection = config.getConfigurationSection(newSectionName);
 				if (newSection == null) {
 					newSection = config.createSection(newSectionName);
 				}
 
-				Object newSectionInstance = this.deserialize(newSection, fieldType);
-				field.set(instance, newSectionInstance);
+				Object newSectionInstance = this.deserialize(newSection, field.getType());
+				field.setField(instance, newSectionInstance);
 				continue;
 			}
 
-			SimpleTranslator<Type, Require> translator = (SimpleTranslator<Type, Require>) SimpleTranslatorRegistry.getTranslator(fieldType);
-			Class<? extends Object> require = translator.require();
-			Require requireAnnotation = null;
-			if (require != null) {
-				requireAnnotation = field.getAnnotation((Class<Require>) require);
-			}
+			SimpleTranslator<Type, Require> translator = SimpleTranslatorRegistry.getTranslator(field);
+			Require requireAnnotation = field.getRequire(translator);
 
-			Type initialValue = (Type) field.get(instance);
+			Type initialValue = (Type) field.getField(instance);
 			Type defaultValue = translator.defaultValue(translatorKey, initialValue, requireAnnotation);
 			Type value = translator.deserialize(config, translatorKey, defaultValue);
 
@@ -255,26 +225,30 @@ public class SimpleConfig<Config> {
 					if (result != null && !result.equals(value)) {
 						ZIPLogger.warn("Unsing default value (" + result + ") for key \"" + translatorKey.name() + "\" in section " + config.getName());
 					}
-					field.set(instance, result);
+					field.setField(instance, result);
 					continue;
 				}
 
 				if (field.getType().isAssignableFrom(value.getClass())) {
-					field.set(instance, value);
+					field.setField(instance, value);
 					continue;
 				}
 			}
 
 			ZIPLogger.warn("Unsing default value (" + defaultValue + ") for key \"" + translatorKey.name() + "\" in section " + config.getName());
-			field.set(instance, defaultValue);
+			field.setField(instance, defaultValue);
 		}
 
 		return instance;
 	}
 
-	public Config getOrDeserializeConfig() throws Exception {
+	public Config getOrDeserializeConfig() {
 		if (this.instance == null) {
-			this.deserialize();
+			try {
+				this.deserialize();
+			} catch (Exception e) {
+				ZIPLogger.error("Unable to deserialize config class of " + this.configClass.getSimpleName(), e);
+			}
 		}
 		return this.instance;
 	}

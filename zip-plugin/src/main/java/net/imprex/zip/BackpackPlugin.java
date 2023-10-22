@@ -12,18 +12,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.imprex.zip.api.ZIPService;
-import net.imprex.zip.config.BackpackConfig;
-import net.imprex.zip.config.v2.GeneralConfig;
+import net.imprex.zip.command.BackpackCommand;
+import net.imprex.zip.config.GeneralConfig;
+import net.imprex.zip.config.translation.TranslationLoader;
+import net.imprex.zip.config.v3.SimpleConfig;
+import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 
 	private NamespacedKey backpackIdentifierKey;
 	private NamespacedKey backpackStorageKey;
 
-	private BackpackConfig backpackConfig;
+	private SimpleConfig<GeneralConfig> backpackConfig;
+	private TranslationLoader translationLoader;
+
 	private BackpackRegistry backpackRegistry;
 	private BackpackHandler backpackHandler;
 
@@ -31,45 +37,42 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 
 	@Override
 	public void onLoad() {
-//		this.backpackIdentifierKey = this.createNamespacedKey("backpack.type");
-//		this.backpackStorageKey = this.createNamespacedKey("backpack.id");
+		this.backpackIdentifierKey = this.createNamespacedKey("backpack.type");
+		this.backpackStorageKey = this.createNamespacedKey("backpack.id");
 
-//		this.backpackConfig = new BackpackConfig(this);
-//		this.backpackRegistry = new BackpackRegistry(this);
-//		this.backpackHandler = new BackpackHandler(this);
+		this.backpackConfig = new SimpleConfig<>(this.getDataFolder().toPath(), GeneralConfig.class);
+		this.translationLoader = new TranslationLoader(this);
+
+		this.backpackRegistry = new BackpackRegistry(this);
+		this.backpackHandler = new BackpackHandler(this);
 	}
 
 	@Override
 	public void onEnable() {
-		var config = new net.imprex.zip.config.v2.BackpackConfig(this);
 		try {
-			config.serialize(new GeneralConfig());
-			GeneralConfig general = config.deserialize(GeneralConfig.class);
-			System.out.println(general.checkForUpdates);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-//		try {
-//			NmsInstance.initialize();
-//
-//			this.backpackConfig.deserialize();
-//
-//			this.backpackRegistry.register();
+			NmsInstance.initialize();
+
+			this.backpackConfig.deserialize(true);
+
+			this.translationLoader.copyLocaleWhenNotExist();
+			this.translationLoader.loadLocale(this.getBackpackConfig().locale);
+
+			this.backpackRegistry.register();
 //			this.backpackHandler.loadBackpacks();
-//
-//			this.updateSystem = new UpdateSystem(this);
-//
-//			new MetricsSystem(this);
-//
-//			this.getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
-//
-//			Bukkit.getPluginManager().registerEvents(new BackpackListener(this), this);
-//			Bukkit.getServicesManager().register(ZIPService.class, this, this, ServicePriority.Normal);
-//		} catch (Exception e) {
-//			ZIPLogger.error("An error occured while enabling plugin", e);
-//
-//			Bukkit.getPluginManager().registerEvents(this, this);
-//		}
+
+			this.updateSystem = new UpdateSystem(this);
+
+			new MetricsSystem(this);
+
+			this.getCommand("zeroinventoryproblems").setExecutor(new BackpackCommand(this));
+
+			Bukkit.getPluginManager().registerEvents(new BackpackListener(this), this);
+			Bukkit.getServicesManager().register(ZIPService.class, this, this, ServicePriority.Normal);
+		} catch (Exception e) {
+			ZIPLogger.error("An error occured while enabling plugin", e);
+
+			Bukkit.getPluginManager().registerEvents(this, this);
+		}
 	}
 
 	@Override
@@ -135,8 +138,12 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 		return this.backpackRegistry;
 	}
 
-	public BackpackConfig getBackpackConfig() {
-		return this.backpackConfig;
+	public GeneralConfig getBackpackConfig() {
+		return this.backpackConfig.getOrDeserializeConfig();
+	}
+
+	public TranslationLoader getTranslationLoader() {
+		return this.translationLoader;
 	}
 
 	public NamespacedKey getBackpackStorageKey() {

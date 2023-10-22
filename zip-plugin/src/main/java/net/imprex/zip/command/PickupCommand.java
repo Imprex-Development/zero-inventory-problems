@@ -7,12 +7,12 @@ import org.bukkit.entity.Player;
 
 import net.imprex.zip.Backpack;
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
 
 public class PickupCommand extends BackpackSubCommand {
 
 	public PickupCommand(BackpackPlugin plugin) {
-		super(plugin, MessageKey.CommandHelpPickup, "zeroinventoryproblems.pickup", "pickup");
+		super(plugin, Message.CommandHelpPickup, "zeroinventoryproblems.pickup", "pickup");
 	}
 
 	@Override
@@ -24,19 +24,19 @@ public class PickupCommand extends BackpackSubCommand {
 
 		Backpack backpack = this.checkIfHoldingBackpack(player);
 		if (backpack == null) {
-			this.messageConfig.send(player, MessageKey.YouNeedToHoldABackpackInYourHand);
+			this.translation.send(player, Message.YouNeedToHoldABackpackInYourHand);
 			return;
 		}
 
 		if (!backpack.hasUnuseableContent()) {
-			this.messageConfig.send(player, MessageKey.YourBackpackHasNoUnusableItems);
+			this.translation.send(player, Message.YourBackpackHasNoUnusableItems);
 			return;
 		}
 
 		if (backpack.giveUnsueableContent(player)) {
-			this.messageConfig.send(player, MessageKey.YouReceivedAllUnusableItems);
+			this.translation.send(player, Message.YouReceivedAllUnusableItems);
 		} else {
-			this.messageConfig.send(player, MessageKey.YouNeedMoreSpaceInYourInventory);
+			this.translation.send(player, Message.YouNeedMoreSpaceInYourInventory);
 		}
 	}
 

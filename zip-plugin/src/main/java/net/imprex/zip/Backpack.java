@@ -16,8 +16,8 @@ import org.bukkit.persistence.PersistentDataType;
 import net.imprex.zip.api.ZIPBackpack;
 import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
-import net.imprex.zip.config.MessageConfig;
-import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.config.translation.Message;
+import net.imprex.zip.config.translation.TranslationLoader;
 
 public class Backpack implements ZIPBackpack {
 
@@ -26,7 +26,7 @@ public class Backpack implements ZIPBackpack {
 
 	private final BackpackHandler backpackHandler;
 	private final NamespacedKey storageKey;
-	private final MessageConfig messageConfig;
+	private final TranslationLoader translation;
 
 	private final UniqueId id;
 
@@ -39,7 +39,7 @@ public class Backpack implements ZIPBackpack {
 	public Backpack(BackpackPlugin plugin, BackpackType type) {
 		this.backpackHandler = plugin.getBackpackHandler();
 		this.storageKey = plugin.getBackpackStorageKey();
-		this.messageConfig = plugin.getBackpackConfig().message();
+		this.translation = plugin.getTranslationLoader();
 		this.type = type;
 
 		this.typeRaw = type.getUniqueName();
@@ -56,7 +56,7 @@ public class Backpack implements ZIPBackpack {
 	public Backpack(BackpackPlugin plugin, Ingrim4Buffer buffer) {
 		this.backpackHandler = plugin.getBackpackHandler();
 		this.storageKey = plugin.getBackpackStorageKey();
-		this.messageConfig = plugin.getBackpackConfig().message();
+		this.translation = plugin.getTranslationLoader();
 
 		this.id = UniqueId.fromByteArray(buffer.readByteArray());
 
@@ -118,12 +118,12 @@ public class Backpack implements ZIPBackpack {
 			player.openInventory(this.inventory);
 
 			if (this.hasUnuseableContent()) {
-				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
+				this.translation.send(player, Message.YouHaveUnusableItemsUsePickup);
 			}
 		} else {
-			player.sendMessage(this.messageConfig.get(MessageKey.ThisBackpackNoLongerExist));
+			player.sendMessage(this.translation.get(Message.ThisBackpackNoLongerExist));
 			if (this.hasUnuseableContent()) {
-				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
+				this.translation.send(player, Message.YouHaveUnusableItemsUsePickup);
 			}
 		}
 	}

@@ -1,6 +1,6 @@
-package net.imprex.zip.config;
+package net.imprex.zip.config.translation;
 
-public enum MessageKey {
+public enum Message {
 
 	Prefix("prefix", "§8[§eZIP§8] §7"),
 	NotAConsoleCommand("notAConsoleCommand", "This command can not be executed from the console"),
@@ -61,8 +61,8 @@ public enum MessageKey {
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}");
 
-	public static MessageKey findByKey(String key) {
-		for (MessageKey messageKey : values()) {
+	public static Message findByKey(String key) {
+		for (Message messageKey : values()) {
 			if (messageKey.key.equalsIgnoreCase(key)) {
 				return messageKey;
 			}
@@ -73,7 +73,7 @@ public enum MessageKey {
 	private final String key;
 	private final String defaultMessage;
 
-	private MessageKey(String key, String defaultMessage) {
+	private Message(String key, String defaultMessage) {
 		this.key = key;
 		this.defaultMessage = defaultMessage;
 	}
