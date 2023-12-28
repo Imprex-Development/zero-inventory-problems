@@ -1,0 +1,29 @@
+version: 4
+testBoolean: false # Just some testing
+general:
+  # Change this value to true to enable update notifications.
+  checkForUpdates: true
+  # Change a test value to someting else
+  #  
+  # Just added some space
+  #  
+  testCountKey xD: 60
+  # Set your username
+  username: INGRIM
+  randomList:
+  - Just
+  - Some
+  - Random
+  - Input
+exampleMap:
+  a:
+  - java
+  - html
+  - csharp
+  b:
+  - lua
+  - python
+  - scss
+  c:
+  - html
+  - css

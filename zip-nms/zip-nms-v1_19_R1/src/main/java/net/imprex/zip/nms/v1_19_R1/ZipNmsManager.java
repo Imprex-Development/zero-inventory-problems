@@ -15,8 +15,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 
-import net.imprex.zip.common.ReflectionUtil;
 import net.imprex.zip.nms.api.NmsManager;
+import net.imprex.zip.util.ReflectionUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
