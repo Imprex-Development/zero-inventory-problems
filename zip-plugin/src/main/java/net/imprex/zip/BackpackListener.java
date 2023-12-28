@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -47,7 +48,15 @@ public class BackpackListener implements Listener {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onInventoryClick(InventoryClickEvent event) {
-		if (!this.backpackHandler.isBackpack(event.getCurrentItem())) {
+		ItemStack currentItem = event.getCurrentItem();
+		if (event.getClick() == ClickType.NUMBER_KEY) {
+			int hotbarSlot = event.getHotbarButton();
+			if (hotbarSlot != -1) {
+				currentItem = event.getWhoClicked().getInventory().getItem(hotbarSlot);
+			}
+		}
+		
+		if (!this.backpackHandler.isBackpack(currentItem)) {
 			return;
 		}
 
