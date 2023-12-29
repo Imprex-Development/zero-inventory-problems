@@ -98,10 +98,9 @@ public class BackpackListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if ((event.getAction() == Action.RIGHT_CLICK_AIR
 				|| event.getAction() == Action.RIGHT_CLICK_BLOCK)
-				&& event.getHand() == EquipmentSlot.HAND) {
-			if (this.backpackHandler.isBackpack(event.getItem())) {
-				event.setCancelled(true);
-			}
+				&& event.getHand() == EquipmentSlot.HAND
+				&& this.backpackHandler.isBackpack(event.getItem())) {
+			event.setCancelled(true);
 
 			Backpack backpack = this.backpackHandler.getBackpack(event.getItem());
 			if (backpack != null) {
