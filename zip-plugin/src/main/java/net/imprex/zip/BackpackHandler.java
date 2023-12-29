@@ -3,7 +3,6 @@ package net.imprex.zip;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -24,6 +23,7 @@ import net.imprex.zip.api.ZIPHandler;
 import net.imprex.zip.api.ZIPUniqueId;
 import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
+import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackHandler implements ZIPHandler {
 
@@ -35,7 +35,6 @@ public class BackpackHandler implements ZIPHandler {
 	private final Path folderPath;
 
 	private Map<UniqueId, Backpack> backpackById = new ConcurrentHashMap<>();
-	private Map<ItemStack, Backpack> backpackByItem = new ConcurrentHashMap<>();
 	private Map<Inventory, Backpack> backpackByInventory = new ConcurrentHashMap<>();
 
 	public BackpackHandler(BackpackPlugin plugin) {
@@ -57,18 +56,8 @@ public class BackpackHandler implements ZIPHandler {
 
 	public void disable() {
 		this.backpackById.values().forEach(Backpack::save);
-	}
-
-	public void loadBackpacks() {
-		try {
-			if (Files.notExists(this.folderPath)) {
-				Files.createDirectories(this.folderPath);
-			}
-
-			Files.walk(this.folderPath, FileVisitOption.FOLLOW_LINKS).forEach(this::loadBackpack);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.backpackById.clear();
+		this.backpackByInventory.clear();
 	}
 
 	public Backpack loadBackpack(Path file) {
@@ -81,13 +70,15 @@ public class BackpackHandler implements ZIPHandler {
 			Ingrim4Buffer buffer = new Ingrim4Buffer(Unpooled.wrappedBuffer(data));
 
 			Backpack backpack = new Backpack(this.plugin, buffer);
-			this.backpackById.put(backpack.getId(), backpack);
-
 			return backpack;
 		} catch (IOException e) {
-			e.printStackTrace();
+			ZIPLogger.error("Unable to load backpack for id '" + file.getFileName().toString() + "'", e);
 		}
 		return null;
+	}
+
+	public Backpack loadBackpack(UniqueId id) {
+		return this.loadBackpack(this.folderPath.resolve(id.toString()));
 	}
 
 	@Override
@@ -115,7 +106,7 @@ public class BackpackHandler implements ZIPHandler {
 
 	@Override
 	public Backpack getBackpack(ZIPUniqueId id) {
-		return this.backpackById.get(id);
+		return this.backpackById.computeIfAbsent((UniqueId) id, __ -> this.loadBackpack((UniqueId) id));
 	}
 
 	@Override
@@ -127,11 +118,6 @@ public class BackpackHandler implements ZIPHandler {
 	public Backpack getBackpack(ItemStack item) {
 		if (item == null) {
 			return null;
-		}
-
-		Backpack backpack = this.backpackByItem.get(item);
-		if (backpack != null) {
-			return backpack;
 		}
 
 		if (item != null && item.hasItemMeta()) {
@@ -162,11 +148,6 @@ public class BackpackHandler implements ZIPHandler {
 	public boolean isBackpack(ItemStack item) {
 		if (item == null) {
 			return false;
-		}
-
-		Backpack backpack = this.backpackByItem.get(item);
-		if (backpack != null) {
-			return true;
 		}
 
 		if (item != null && item.hasItemMeta()) {

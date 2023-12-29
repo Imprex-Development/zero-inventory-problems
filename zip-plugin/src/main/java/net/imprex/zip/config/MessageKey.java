@@ -59,7 +59,8 @@ public enum MessageKey {
 	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
-	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}");
+	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}"),
+	UnableToLoadBackpack("unableToLoadBackpack", "Backpack can't be loaded!");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {
