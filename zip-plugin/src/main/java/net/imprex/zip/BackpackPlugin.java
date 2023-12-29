@@ -49,7 +49,6 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 			this.backpackConfig.deserialize();
 
 			this.backpackRegistry.register();
-			this.backpackHandler.loadBackpacks();
 
 			this.updateSystem = new UpdateSystem(this);
 

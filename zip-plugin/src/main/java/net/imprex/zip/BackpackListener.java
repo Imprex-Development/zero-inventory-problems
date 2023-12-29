@@ -18,17 +18,21 @@ import org.bukkit.inventory.ItemStack;
 
 import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.api.ZIPRecipe;
+import net.imprex.zip.config.MessageConfig;
+import net.imprex.zip.config.MessageKey;
 
 public class BackpackListener implements Listener {
 
 	private final BackpackHandler backpackHandler;
 	private final BackpackRegistry backpackRegistry;
 	private final UpdateSystem updateSystem;
+	private final MessageConfig messageConfig;
 
 	public BackpackListener(BackpackPlugin plugin) {
 		this.backpackHandler = plugin.getBackpackHandler();
 		this.backpackRegistry = plugin.getBackpackRegistry();
 		this.updateSystem = plugin.getUpdateSystem();
+		this.messageConfig = plugin.getBackpackConfig().message();
 	}
 
 	@EventHandler
@@ -102,6 +106,8 @@ public class BackpackListener implements Listener {
 			Backpack backpack = this.backpackHandler.getBackpack(event.getItem());
 			if (backpack != null) {
 				backpack.open(event.getPlayer());
+			} else {
+				this.messageConfig.send(event.getPlayer(), MessageKey.UnableToLoadBackpack);
 			}
 		}
 	}
@@ -117,12 +123,7 @@ public class BackpackListener implements Listener {
 	public void onCraftItem(CraftItemEvent event) {
 		ItemStack item = event.getCurrentItem();
 		if (this.backpackHandler.isBackpack(item)) {
-			if (event.isShiftClick()) {
-				event.setCancelled(true);
-				return;
-			}
-
-			this.backpackHandler.getBackpack(item);
+			event.setCancelled(true);
 		}
 	} 
 }
