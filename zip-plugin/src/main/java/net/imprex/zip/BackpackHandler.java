@@ -5,8 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;
@@ -36,6 +38,7 @@ public class BackpackHandler implements ZIPHandler {
 
 	private Map<UniqueId, Backpack> backpackById = new ConcurrentHashMap<>();
 	private Map<Inventory, Backpack> backpackByInventory = new ConcurrentHashMap<>();
+	private List<UniqueId> loadingIssue = new CopyOnWriteArrayList<>();
 
 	public BackpackHandler(BackpackPlugin plugin) {
 		this.plugin = plugin;
@@ -71,14 +74,22 @@ public class BackpackHandler implements ZIPHandler {
 
 			Backpack backpack = new Backpack(this.plugin, buffer);
 			return backpack;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			ZIPLogger.error("Unable to load backpack for id '" + file.getFileName().toString() + "'", e);
 		}
 		return null;
 	}
 
 	public Backpack loadBackpack(UniqueId id) {
-		return this.loadBackpack(this.folderPath.resolve(id.toString()));
+		if (this.loadingIssue.contains(id)) {
+			return null;
+		}
+
+		Backpack backpack = this.loadBackpack(this.folderPath.resolve(id.toString()));
+		if (backpack == null) {
+			this.loadingIssue.add(id);
+		}
+		return backpack;
 	}
 
 	@Override
@@ -106,7 +117,11 @@ public class BackpackHandler implements ZIPHandler {
 
 	@Override
 	public Backpack getBackpack(ZIPUniqueId id) {
-		return this.backpackById.computeIfAbsent((UniqueId) id, __ -> this.loadBackpack((UniqueId) id));
+		Backpack backpack = this.backpackById.get(id);
+		if (backpack == null) {
+			backpack = this.loadBackpack((UniqueId) id);
+		}
+		return backpack;
 	}
 
 	@Override
