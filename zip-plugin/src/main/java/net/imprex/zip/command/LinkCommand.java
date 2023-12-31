@@ -71,6 +71,9 @@ public class LinkCommand extends BackpackSubCommand {
 		} else if (linkingBackpack.equals(backpack)) {
 			this.messageConfig.send(player, MessageKey.ThisBackpackIsAlreadyLinkedThoThat);
 			return;
+		} else if (item.getAmount() > 1) {
+			this.messageConfig.send(player, MessageKey.StackedBackpacksCanNotBeLinked);
+			return;
 		}
 
 		linkingBackpack.applyOnItem(item);
