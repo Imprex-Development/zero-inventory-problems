@@ -13,5 +13,7 @@ public interface ZIPHandler {
 
 	ZIPBackpack getBackpack(ItemStack item);
 
+	ZIPBackpackType getBackpackType(ItemStack item);
+
 	boolean isBackpack(ItemStack item);
 }

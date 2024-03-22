@@ -18,6 +18,8 @@ public class BackpackTypeConfig {
 
 	public RecipeConfig recipe;
 
+	public String craftingPermission;
+
 	public BackpackTypeConfig(ConfigurationSection config, String key) {
 		if (config == null) {
 			throw new IllegalArgumentException("Config section for backpack type " + key + " not found");
@@ -57,6 +59,16 @@ public class BackpackTypeConfig {
 			this.lore = config.getStringList("lore").stream().map(lore -> ChatColor.translateAlternateColorCodes('&', lore)).toList();
 		} else {
 			throw new IllegalArgumentException("Config value lore was not found in backpack type " + key);
+		}
+
+		if (config.contains("craftingPermission") && config.isString("craftingPermission")) {
+			String permission = config.getString("craftingPermission");
+			if (permission != null) {
+				permission = permission.trim();
+				if (permission.length() != 0) {
+					this.craftingPermission = permission;
+				}
+			}
 		}
 
 		ConfigurationSection recipeSection = config.getConfigurationSection("recipe");
