@@ -7,8 +7,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import net.imprex.zip.api.ZIPBackpackType;
+import net.imprex.zip.api.ZIPRecipe;
 import net.imprex.zip.api.ZIPRegistry;
 import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.config.BackpackTypeConfig;
@@ -36,6 +38,8 @@ public class BackpackRegistry implements ZIPRegistry {
 			BackpackRecipe recipe = backpackType.getRecipe();
 			Bukkit.addRecipe(recipe);
 		}
+
+		Bukkit.getOnlinePlayers().forEach(this::discoverRecipes);
 	}
 
 	public void unregister() {
@@ -47,6 +51,18 @@ public class BackpackRegistry implements ZIPRegistry {
 			}
 		}
 		this.backpackType.clear();
+	}
+
+	@Override
+	public void discoverRecipes(Player player, boolean force) {
+		for (ZIPBackpackType backpackType : this.getType()) {
+			ZIPRecipe recipe = backpackType.getRecipe();
+			if (recipe.canDiscover()
+					|| (backpackType.hasCraftingPermission() && player.hasPermission(backpackType.getCraftingPermission()))
+					|| force) {
+				player.discoverRecipe(recipe.getKey());
+			}
+		}
 	}
 
 	@Override

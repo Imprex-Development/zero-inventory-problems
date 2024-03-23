@@ -21,6 +21,7 @@ import com.google.common.io.ByteStreams;
 
 import io.netty.buffer.Unpooled;
 import net.imprex.zip.api.ZIPBackpack;
+import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.api.ZIPHandler;
 import net.imprex.zip.api.ZIPUniqueId;
 import net.imprex.zip.common.Ingrim4Buffer;
@@ -131,10 +132,6 @@ public class BackpackHandler implements ZIPHandler {
 
 	@Override
 	public Backpack getBackpack(ItemStack item) {
-		if (item == null) {
-			return null;
-		}
-
 		if (item != null && item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
 			PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
@@ -153,6 +150,22 @@ public class BackpackHandler implements ZIPHandler {
 				Backpack newBackpack = backpackType.create();
 				newBackpack.applyOnItem(item);
 				return newBackpack;
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public ZIPBackpackType getBackpackType(ItemStack item) {
+		if (item != null && item.hasItemMeta()) {
+			ItemMeta meta = item.getItemMeta();
+			PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+			if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
+				String backpackIdentifier = dataContainer.get(this.backpackIdentifierKey, PersistentDataType.STRING);
+				BackpackType backpackType = this.registry.getTypeByName(backpackIdentifier);
+				return backpackType;
 			}
 		}
 

@@ -67,4 +67,14 @@ public class BackpackType implements ZIPBackpackType {
 	public BackpackRecipe getRecipe() {
 		return this.recipe;
 	}
+
+	@Override
+	public boolean hasCraftingPermission() {
+		return this.config.craftingPermission != null;
+	}
+
+	@Override
+	public String getCraftingPermission() {
+		return this.config.craftingPermission;
+	}
 }

@@ -22,6 +22,7 @@ type:
         E: LEAD
         C: CHEST
         D: DIAMOND
+    craftingPermission: 'zeroinventoryproblems.crafting.big'
   medium:
     uniqueName: 'medium'
     displayName: '&7Medium &eBackpack'
@@ -42,6 +43,7 @@ type:
         E: LEAD
         C: CHEST
         I: IRON_INGOT
+    craftingPermission: 'zeroinventoryproblems.crafting.medium'
   small:
     uniqueName: 'small'
     displayName: '&7Small &eBackpack'
@@ -61,3 +63,4 @@ type:
         S: STICK
         E: LEAD
         C: CHEST
+    craftingPermission: 'zeroinventoryproblems.crafting.small'

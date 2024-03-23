@@ -1,5 +1,6 @@
 package net.imprex.zip;
 
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,7 +18,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import net.imprex.zip.api.ZIPBackpackType;
-import net.imprex.zip.api.ZIPRecipe;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
 
@@ -38,12 +38,7 @@ public class BackpackListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
-		for (ZIPBackpackType backpackType : this.backpackRegistry.getType()) {
-			ZIPRecipe recipe = backpackType.getRecipe();
-			if (recipe.canDiscover()) {
-				player.discoverRecipe(recipe.getKey());
-			}
-		}
+		this.backpackRegistry.discoverRecipes(player);
 
 		if (player.isOp() || player.hasPermission("zeroinventoryproblems.notification")) {
 			this.updateSystem.checkForUpdates(player);
@@ -120,9 +115,17 @@ public class BackpackListener implements Listener {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onCraftItem(CraftItemEvent event) {
+		HumanEntity player = event.getWhoClicked();
 		ItemStack item = event.getCurrentItem();
-		if (this.backpackHandler.isBackpack(item)) {
-			event.setCancelled(true);
+
+		ZIPBackpackType type = this.backpackHandler.getBackpackType(item);
+		if (type.hasCraftingPermission()) {
+			String permission = type.getCraftingPermission();
+			if (!player.hasPermission(permission)) {
+				event.setCancelled(true);
+
+				this.messageConfig.send(player, MessageKey.YouDontHaveTheFollowingPermission, permission);
+			}
 		}
-	} 
+	}
 }

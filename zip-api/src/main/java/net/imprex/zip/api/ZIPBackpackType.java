@@ -17,4 +17,8 @@ public interface ZIPBackpackType {
 	ItemStack getItem();
 
 	ZIPRecipe getRecipe();
+
+	boolean hasCraftingPermission();
+
+	String getCraftingPermission();
 }
