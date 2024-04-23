@@ -50,12 +50,17 @@ public class Backpack implements ZIPBackpack {
 		this.backpackHandler.registerBackpack(this);
 	}
 
-	public Backpack(BackpackPlugin plugin, Ingrim4Buffer buffer) {
+	public Backpack(BackpackPlugin plugin, UniqueId id, Ingrim4Buffer buffer) {
 		this.backpackHandler = plugin.getBackpackHandler();
 		this.storageKey = plugin.getBackpackStorageKey();
 		this.messageConfig = plugin.getBackpackConfig().message();
 
-		this.id = UniqueId.fromByteArray(buffer.readByteArray());
+		/*
+		 * Load backpack id from buffer but don't use it!
+		 * Just for later migration to SQL
+		 */
+		buffer.readByteArray();
+		this.id = id;
 
 		this.typeRaw = buffer.readString();
 		this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
