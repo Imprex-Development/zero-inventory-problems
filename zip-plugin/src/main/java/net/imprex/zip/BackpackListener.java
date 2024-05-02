@@ -119,7 +119,7 @@ public class BackpackListener implements Listener {
 		ItemStack item = event.getCurrentItem();
 
 		ZIPBackpackType type = this.backpackHandler.getBackpackType(item);
-		if (type.hasCraftingPermission()) {
+		if (type != null && type.hasCraftingPermission()) {
 			String permission = type.getCraftingPermission();
 			if (!player.hasPermission(permission)) {
 				event.setCancelled(true);
