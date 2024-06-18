@@ -1,7 +1,6 @@
-<img align="right" src="https://user-images.githubusercontent.com/13753840/213946932-635d40a3-a278-427c-9e9c-245a89ed12a9.png" height="200" width="200">
-
 # Zero Inventory Problems - ZIP
 [![Release Status](https://github.com/Imprex-Development/zero-inventory-problems/workflows/Releases/badge.svg)](https://github.com/Imprex-Development/zero-inventory-problems/releases/latest) [![Build Status](https://github.com/Imprex-Development/zero-inventory-problems/workflows/Build/badge.svg)](https://github.com/Imprex-Development/zero-inventory-problems/actions?query=workflow%3ABuild)
+<img align="right" src="https://user-images.githubusercontent.com/13753840/213946932-635d40a3-a278-427c-9e9c-245a89ed12a9.png" height="200" width="200">
 
 Zero Inventory Problems is a plugin for Spigot based Minecraft Servers that adds backpacks to store there overfully inventorys.
 
@@ -23,7 +22,7 @@ Still having trouble getting Zero Inventory Problems to run check out our [commo
 
 ## License:
 
-Copyright (C) 2023 by Imprex-Development. All rights reserved.
+Copyright (C) 2023-2024 by Imprex-Development. All rights reserved.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
