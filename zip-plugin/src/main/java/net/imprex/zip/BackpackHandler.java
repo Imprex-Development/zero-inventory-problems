@@ -66,6 +66,7 @@ public class BackpackHandler implements ZIPHandler {
 
 	private Backpack loadBackpack(UniqueId id) {
 		Path file = this.folderPath.resolve(id.toString());
+		
 		if (!Files.isRegularFile(file)) {
 			return null;
 		}
@@ -109,8 +110,13 @@ public class BackpackHandler implements ZIPHandler {
 		if (this.loadingIssue.contains(id)) {
 			return null;
 		}
+		
+		Backpack backpack = this.backpackById.get(id);
+		if (backpack != null) {
+			return backpack;
+		}
 
-		Backpack backpack = this.loadBackpack(id);
+		backpack = this.loadBackpack(id);
 		if (backpack == null) {
 			this.loadingIssue.add(id);
 		}
@@ -137,20 +143,29 @@ public class BackpackHandler implements ZIPHandler {
 			ItemMeta meta = item.getItemMeta();
 			PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
+			UniqueId uniqueId = null;
 			if (dataContainer.has(this.backpackStorageKey, PersistentDataType.BYTE_ARRAY)) {
 				byte[] storageKey = dataContainer.get(this.backpackStorageKey, PersistentDataType.BYTE_ARRAY);
-				UniqueId uniqueId = UniqueId.fromByteArray(storageKey);
-				return this.getBackpack(uniqueId);
-			} else if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
+				uniqueId = UniqueId.fromByteArray(storageKey);
+
+				Backpack backpack = this.getBackpack(uniqueId);
+				if (backpack != null) {
+					return backpack;
+				}
+			}
+			
+			if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
 				String backpackIdentifier = dataContainer.get(this.backpackIdentifierKey, PersistentDataType.STRING);
 				BackpackType backpackType = this.registry.getTypeByName(backpackIdentifier);
 				if (backpackType == null) {
 					return null;
 				}
 
-				Backpack newBackpack = backpackType.create();
-				newBackpack.applyOnItem(item);
-				return newBackpack;
+				Backpack backpack = uniqueId != null
+					? new Backpack(plugin, backpackType, uniqueId)
+					: backpackType.create();
+				backpack.applyOnItem(item);
+				return backpack;
 			}
 		}
 

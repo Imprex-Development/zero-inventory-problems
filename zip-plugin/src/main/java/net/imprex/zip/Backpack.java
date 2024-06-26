@@ -22,8 +22,10 @@ import net.imprex.zip.config.MessageKey;
 public class Backpack implements ZIPBackpack {
 
 	private final BackpackHandler backpackHandler;
-	private final NamespacedKey storageKey;
 	private final MessageConfig messageConfig;
+
+	private final NamespacedKey identifierKey;
+	private final NamespacedKey storageKey;
 
 	private final UniqueId id;
 
@@ -33,14 +35,15 @@ public class Backpack implements ZIPBackpack {
 	private ItemStack[] content;
 	private Inventory inventory;
 
-	public Backpack(BackpackPlugin plugin, BackpackType type) {
+	public Backpack(BackpackPlugin plugin, BackpackType type, UniqueId id) {
 		this.backpackHandler = plugin.getBackpackHandler();
-		this.storageKey = plugin.getBackpackStorageKey();
 		this.messageConfig = plugin.getBackpackConfig().message();
-		this.type = type;
+		this.identifierKey = plugin.getBackpackIdentifierKey();
+		this.storageKey = plugin.getBackpackStorageKey();
 
+		this.type = type;
 		this.typeRaw = type.getUniqueName();
-		this.id = UniqueId.get();
+		this.id = id != null ? id : UniqueId.get();
 
 		int rows = this.type.getInventoryRows();
 		String displayName = this.type.getDisplayName();
@@ -48,12 +51,15 @@ public class Backpack implements ZIPBackpack {
 		this.content = this.inventory.getContents();
 
 		this.backpackHandler.registerBackpack(this);
+		
+		this.save();
 	}
 
 	public Backpack(BackpackPlugin plugin, UniqueId id, Ingrim4Buffer buffer) {
 		this.backpackHandler = plugin.getBackpackHandler();
-		this.storageKey = plugin.getBackpackStorageKey();
 		this.messageConfig = plugin.getBackpackConfig().message();
+		this.identifierKey = plugin.getBackpackIdentifierKey();
+		this.storageKey = plugin.getBackpackStorageKey();
 
 		/*
 		 * Load backpack id from buffer but don't use it!
@@ -123,6 +129,7 @@ public class Backpack implements ZIPBackpack {
 			}
 		} else {
 			player.sendMessage(this.messageConfig.get(MessageKey.ThisBackpackNoLongerExist));
+			
 			if (this.hasUnuseableContent()) {
 				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
 			}
@@ -133,7 +140,8 @@ public class Backpack implements ZIPBackpack {
 	public boolean applyOnItem(ItemStack item) {
 		if (item != null && item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
-			meta.getPersistentDataContainer().set(this.storageKey, PersistentDataType.BYTE_ARRAY, id.toByteArray());
+			meta.getPersistentDataContainer().set(this.storageKey, PersistentDataType.BYTE_ARRAY, this.id.toByteArray());
+			meta.getPersistentDataContainer().set(this.identifierKey, PersistentDataType.STRING, this.typeRaw);
 			item.setItemMeta(meta);
 			return true;
 		}
