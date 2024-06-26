@@ -110,8 +110,13 @@ public class BackpackHandler implements ZIPHandler {
 		if (this.loadingIssue.contains(id)) {
 			return null;
 		}
+		
+		Backpack backpack = this.backpackById.get(id);
+		if (backpack != null) {
+			return backpack;
+		}
 
-		Backpack backpack = this.loadBackpack(id);
+		backpack = this.loadBackpack(id);
 		if (backpack == null) {
 			this.loadingIssue.add(id);
 		}
@@ -144,15 +149,6 @@ public class BackpackHandler implements ZIPHandler {
 				uniqueId = UniqueId.fromByteArray(storageKey);
 
 				Backpack backpack = this.getBackpack(uniqueId);
-				if (backpack == null) {
-					backpack = this.backpackById.get(uniqueId);
-					
-					// force save when backpack was found in cache but not on disk
-					if (backpack != null) {
-						this.save(backpack);
-					}
-				}
-				
 				if (backpack != null) {
 					return backpack;
 				}

@@ -51,6 +51,8 @@ public class Backpack implements ZIPBackpack {
 		this.content = this.inventory.getContents();
 
 		this.backpackHandler.registerBackpack(this);
+		
+		this.save();
 	}
 
 	public Backpack(BackpackPlugin plugin, UniqueId id, Ingrim4Buffer buffer) {
@@ -127,6 +129,7 @@ public class Backpack implements ZIPBackpack {
 			}
 		} else {
 			player.sendMessage(this.messageConfig.get(MessageKey.ThisBackpackNoLongerExist));
+			
 			if (this.hasUnuseableContent()) {
 				this.messageConfig.send(player, MessageKey.YouHaveUnusableItemsUsePickup);
 			}
