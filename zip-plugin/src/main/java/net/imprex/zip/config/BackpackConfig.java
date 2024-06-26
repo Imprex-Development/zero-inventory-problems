@@ -28,7 +28,7 @@ public class BackpackConfig {
 			Path configPath = dataFolder.resolve("config.yml");
 
 			if (Files.notExists(configPath)) {
-				String configVersion = MinecraftVersion.getMajorVersion() + "." + MinecraftVersion.getMinorVersion();
+				String configVersion = MinecraftVersion.majorVersion() + "." + MinecraftVersion.minorVersion();
 
 				if (Files.notExists(dataFolder)) {
 					Files.createDirectories(dataFolder);
