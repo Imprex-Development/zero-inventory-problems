@@ -1,5 +1,8 @@
 package net.imprex.zip.common;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +27,7 @@ public final class MinecraftVersion implements Comparable<MinecraftVersion> {
 			for (NmsMapping mapping : MAPPINGS) {
 				if (version.isAtOrAbove(mapping.version)) {
 					if (mapping.version.minor() != version.minor()) {
-						OFCLogger.warn(String.format("Using nms mapping with mismatched minor versions: %s - %s",
+						System.out.println(String.format("Using nms mapping with mismatched minor versions: %s - %s",
 								mapping.version, version));
 					}
 
