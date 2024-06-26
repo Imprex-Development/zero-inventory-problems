@@ -40,7 +40,7 @@ public class BackpackType implements ZIPBackpackType {
 
 	@Override
 	public Backpack create() {
-		return new Backpack(this.plugin, this);
+		return new Backpack(this.plugin, this, null);
 	}
 
 	@Override
