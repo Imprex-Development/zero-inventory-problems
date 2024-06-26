@@ -144,6 +144,15 @@ public class BackpackHandler implements ZIPHandler {
 				uniqueId = UniqueId.fromByteArray(storageKey);
 
 				Backpack backpack = this.getBackpack(uniqueId);
+				if (backpack == null) {
+					backpack = this.backpackById.get(uniqueId);
+					
+					// force save when backpack was found in cache but not on disk
+					if (backpack != null) {
+						this.save(backpack);
+					}
+				}
+				
 				if (backpack != null) {
 					return backpack;
 				}
