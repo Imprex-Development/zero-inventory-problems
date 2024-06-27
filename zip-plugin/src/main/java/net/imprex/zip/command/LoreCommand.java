@@ -1,5 +1,6 @@
 package net.imprex.zip.command;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -59,6 +60,10 @@ public class LoreCommand extends BackpackSubCommand {
 
 		ItemMeta meta = item.getItemMeta();
 		List<String> lore = meta.getLore();
+
+		if (lore == null) {
+			lore = new ArrayList<String>();
+		}
 
 		boolean apply = switch (args[0]) {
 		case "add", "create" -> this.handleAdd(sender, Arrays.copyOfRange(args, 1, args.length), lore);
