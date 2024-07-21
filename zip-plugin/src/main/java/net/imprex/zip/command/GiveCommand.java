@@ -24,11 +24,6 @@ public class GiveCommand extends BackpackSubCommand {
 
 	@Override
 	public void onCommand(CommandSender sender, String[] args) {
-		Player player = this.isPlayer(sender);
-		if (player == null) {
-			return;
-		}
-
 		if (args.length < 1) {
 			this.messageConfig.send(sender, MessageKey.PleaseEnterABackpackType);
 			return;
@@ -41,7 +36,7 @@ public class GiveCommand extends BackpackSubCommand {
 		}
 
 		if (args.length > 1) {
-			Player target = Bukkit.getPlayer(args[1]);
+			Player target = Bukkit.getPlayerExact(args[1]);
 			if (target == null || !target.isOnline()) {
 				this.messageConfig.send(sender, MessageKey.NoOnlinePlayerWasFound, args[1]);
 				return;
@@ -54,6 +49,11 @@ public class GiveCommand extends BackpackSubCommand {
 				this.messageConfig.send(sender, MessageKey.TargetPlayerNeedMoreSpaceInYourInventory, target.getDisplayName());
 			}
 		} else {
+			Player player = this.isPlayer(sender);
+			if (player == null) {
+				return;
+			}
+			
 			ItemStack backpack = backpackType.createItem();
 			if (player.getInventory().addItem(backpack).isEmpty()) {
 				this.messageConfig.send(sender, MessageKey.YouHaveGivenYourselfABackpack, backpackType.getUniqueName());
