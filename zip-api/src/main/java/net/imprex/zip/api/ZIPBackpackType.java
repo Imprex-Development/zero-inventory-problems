@@ -1,5 +1,7 @@
 package net.imprex.zip.api;
 
+import java.util.List;
+
 import org.bukkit.inventory.ItemStack;
 
 public interface ZIPBackpackType {
@@ -8,11 +10,19 @@ public interface ZIPBackpackType {
 
 	ZIPBackpack create();
 
+	void updateItem(ItemStack item);
+
 	int getInventoryRows();
 
 	String getUniqueName();
 
 	String getDisplayName();
+	
+	String getItemTexture();
+	
+	List<String> getLore();
+	
+	int getCustomModelData();
 
 	ItemStack getItem();
 

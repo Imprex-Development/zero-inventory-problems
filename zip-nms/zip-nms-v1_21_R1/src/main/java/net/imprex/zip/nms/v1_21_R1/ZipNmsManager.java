@@ -2,11 +2,13 @@ package net.imprex.zip.nms.v1_21_R1;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_21_R1.CraftRegistry;
@@ -25,12 +27,11 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class ZipNmsManager implements NmsManager {
 
-	private static final Class<?> CRAFTMETASKULL_CLASS = ReflectionUtil.getCraftBukkitClass("inventory.CraftMetaSkull");
-	private static final Method CRAFTMETASKULL_SET_PROFILE = ReflectionUtil.getMethod(CRAFTMETASKULL_CLASS,
-			"setProfile", GameProfile.class);
+	private static final BiConsumer<SkullMeta, GameProfile> SET_PROFILE;
 
 	private static final RegistryAccess DEFAULT_REGISTRY = CraftRegistry.getMinecraftRegistry();
 
@@ -38,6 +39,38 @@ public class ZipNmsManager implements NmsManager {
 
 	static {
 		NBT_EMPTY_ITEMSTACK.putString("id", "minecraft:air");
+
+		BiConsumer<SkullMeta, GameProfile> setProfile = (meta, profile) -> {
+			throw new NullPointerException("Unable to find 'setProfile' method!");
+		};
+
+		Class<?> craftMetaSkullClass = new ItemStack(Material.PLAYER_HEAD)
+				.getItemMeta()
+				.getClass();
+
+		Method setResolvableProfileMethod = ReflectionUtil.searchMethod(craftMetaSkullClass, void.class, ResolvableProfile.class);
+		if (setResolvableProfileMethod != null) {
+			setProfile = (meta, profile) -> {
+				try {
+					setResolvableProfileMethod.invoke(meta, new ResolvableProfile(profile));
+				} catch (IllegalAccessException | InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			};
+		} else {
+			Method setProfileMethod = ReflectionUtil.searchMethod(craftMetaSkullClass, void.class, GameProfile.class);
+			if (setProfileMethod != null) {
+				setProfile = (meta, profile) -> {
+					try {
+						setProfileMethod.invoke(meta, profile);
+					} catch (IllegalAccessException | InvocationTargetException e) {
+						e.printStackTrace();
+					}
+				};
+			}
+		}
+
+		SET_PROFILE = setProfile;
 	}
 
 	public byte[] nbtToBinary(CompoundTag compound) {
@@ -103,9 +136,10 @@ public class ZipNmsManager implements NmsManager {
 		try {
 			GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
 			gameProfile.getProperties().put("textures", new Property("textures", texture));
-			CRAFTMETASKULL_SET_PROFILE.invoke(meta, gameProfile);
+
+			SET_PROFILE.accept(meta, gameProfile);
 		} catch (Exception e) {
-			throw new ClassCastException("Error by setting skull profile");
+			e.printStackTrace();
 		}
 	}
 
