@@ -83,7 +83,8 @@ public class BackpackListener implements Listener {
 
 	@EventHandler(ignoreCancelled = false)
 	public void onPlayerDropItem(PlayerDropItemEvent event) {
-		Backpack backpack = this.backpackHandler.getBackpack(event.getItemDrop().getItemStack());
+		ItemStack item = event.getItemDrop().getItemStack();
+		Backpack backpack = this.backpackHandler.getBackpack(item);
 		if (backpack != null) {
 			event.getPlayer().closeInventory();
 		}
