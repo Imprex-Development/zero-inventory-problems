@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -78,6 +79,17 @@ public class BackpackListener implements Listener {
 			if (backpack != null) {
 				backpack.save();
 			}
+		}
+	}
+
+	@EventHandler(ignoreCancelled = false)
+	public void onPlayerPickupItem(EntityPickupItemEvent event) {
+		ItemStack item = event.getItem().getItemStack();
+		Backpack backpack = this.backpackHandler.getBackpack(item);
+		if (backpack != null) {
+			// update backpack attributes on pickup
+			// for example when the texture has changed
+			backpack.updateItem(item);
 		}
 	}
 

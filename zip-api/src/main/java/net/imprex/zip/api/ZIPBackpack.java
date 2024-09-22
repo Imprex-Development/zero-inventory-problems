@@ -9,6 +9,8 @@ public interface ZIPBackpack {
 	void save();
 
 	void open(Player player);
+	
+	void updateItem(ItemStack item);
 
 	boolean applyOnItem(ItemStack item);
 

@@ -1,7 +1,12 @@
 package net.imprex.zip;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import net.imprex.zip.api.ZIPBackpackType;
@@ -42,6 +47,21 @@ public class BackpackType implements ZIPBackpackType {
 	public Backpack create() {
 		return new Backpack(this.plugin, this, null);
 	}
+	
+	@Override
+	public void updateItem(ItemStack item) {
+		if (item != null && item.hasItemMeta()) {
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(this.config.displayName);
+			meta.setLore(this.config.lore);
+			meta.setCustomModelData(this.config.customModelData);
+
+			if (meta instanceof SkullMeta skullMeta) {
+				NmsInstance.setSkullProfile(skullMeta, this.config.texture);
+			}
+			item.setItemMeta(meta);
+		}
+	}
 
 	@Override
 	public int getInventoryRows() {
@@ -56,6 +76,21 @@ public class BackpackType implements ZIPBackpackType {
 	@Override
 	public String getDisplayName() {
 		return this.config.displayName;
+	}
+	
+	@Override
+	public String getItemTexture() {
+		return this.config.texture;
+	}
+	
+	@Override
+	public List<String> getLore() {
+		return Collections.unmodifiableList(this.config.lore);
+	}
+
+	@Override
+	public int getCustomModelData() {
+		return this.config.customModelData;
 	}
 
 	@Override

@@ -117,14 +117,7 @@ public class ReflectionUtil {
         }
         visitedClasses.add(clazz);
 
-    	System.out.println(clazz.getSimpleName());
         for (Method method : clazz.getDeclaredMethods()) {
-        	if (method.getName().contains("Profile")) {
-            	System.out.println(method.getName());
-            	for (Class<?> type : method.getParameterTypes()) {
-                	System.out.println(method.getName() + " " + type.getSimpleName());
-            	}
-        	}
             if (method.getReturnType().equals(returnType) && Arrays.equals(method.getParameterTypes(), parameterTypes)) {
             	method.setAccessible(true);
                 return method;
