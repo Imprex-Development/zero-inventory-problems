@@ -39,15 +39,15 @@ public class ZipNmsManager implements NmsManager {
 
 	static {
 		NBT_EMPTY_ITEMSTACK.putString("id", "minecraft:air");
-		
+
 		BiConsumer<SkullMeta, GameProfile> setProfile = (meta, profile) -> {
 			throw new NullPointerException("Unable to find 'setProfile' method!");
 		};
-		
+
 		Class<?> craftMetaSkullClass = new ItemStack(Material.PLAYER_HEAD)
 				.getItemMeta()
 				.getClass();
-		
+
 		Method setResolvableProfileMethod = ReflectionUtil.searchMethod(craftMetaSkullClass, void.class, ResolvableProfile.class);
 		if (setResolvableProfileMethod != null) {
 			setProfile = (meta, profile) -> {
@@ -69,7 +69,7 @@ public class ZipNmsManager implements NmsManager {
 				};
 			}
 		}
-		
+
 		SET_PROFILE = setProfile;
 	}
 
@@ -136,7 +136,7 @@ public class ZipNmsManager implements NmsManager {
 		try {
 			GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
 			gameProfile.getProperties().put("textures", new Property("textures", texture));
-			
+
 			SET_PROFILE.accept(meta, gameProfile);
 		} catch (Exception e) {
 			e.printStackTrace();
