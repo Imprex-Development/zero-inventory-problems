@@ -3,6 +3,9 @@ package net.imprex.zip.common;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ReflectionUtil {
 
@@ -103,6 +106,38 @@ public class ReflectionUtil {
 			return null;
 		}
 	}
+
+	public static Method searchMethod(Class<?> clazz, Class<?> returnType, Class<?>... parameterTypes) {
+        return findMethod(clazz, returnType, parameterTypes, new HashSet<Class<?>>());
+    }
+
+	private static Method findMethod(Class<?> clazz, Class<?> returnType, Class<?>[] parameterTypes, Set<Class<?>> visitedClasses) {
+        if (clazz == null || visitedClasses.contains(clazz)) {
+            return null;
+        }
+        visitedClasses.add(clazz);
+
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getReturnType().equals(returnType) && Arrays.equals(method.getParameterTypes(), parameterTypes)) {
+            	method.setAccessible(true);
+                return method;
+            }
+        }
+
+        Method superClassMethod = findMethod(clazz.getSuperclass(), returnType, parameterTypes, visitedClasses);
+        if (superClassMethod != null) {
+            return superClassMethod;
+        }
+
+        for (Class<?> interfaceClass : clazz.getInterfaces()) {
+            Method interfaceMethod = findMethod(interfaceClass, returnType, parameterTypes, visitedClasses);
+            if (interfaceMethod != null) {
+                return interfaceMethod;
+            }
+        }
+
+        return null;
+    }
 
 	public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... parameterTypes) {
 		try {

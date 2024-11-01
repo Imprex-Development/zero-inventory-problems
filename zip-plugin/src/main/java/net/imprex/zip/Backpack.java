@@ -137,6 +137,11 @@ public class Backpack implements ZIPBackpack {
 	}
 
 	@Override
+	public void updateItem(ItemStack item) {
+		this.type.updateItem(item);
+	}
+
+	@Override
 	public boolean applyOnItem(ItemStack item) {
 		if (item != null && item.hasItemMeta()) {
 			ItemMeta meta = item.getItemMeta();
