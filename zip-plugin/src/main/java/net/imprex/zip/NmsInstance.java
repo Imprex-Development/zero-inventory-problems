@@ -22,7 +22,7 @@ public class NmsInstance {
 		}
 
 		String nmsVersion = MinecraftVersion.nmsVersion();
-		ZIPLogger.debug("Searching NMS adapter for server version \"" + nmsVersion + "\"!");
+		ZIPLogger.info("Searching NMS adapter for server version \"" + nmsVersion + "\"!");
 
 		try {
 			String className = "net.imprex.zip.nms." + nmsVersion + ".ZipNmsManager";
@@ -35,7 +35,7 @@ public class NmsInstance {
 			throw new RuntimeException("Couldn't initialize NMS adapter", e);
 		}
 
-		ZIPLogger.debug("NMS adapter for server version \"" + nmsVersion + "\" found!");
+		ZIPLogger.info("NMS adapter for server version \"" + nmsVersion + "\" found!");
 	}
 
 	public static byte[] itemstackToBinary(ItemStack[] items) {
