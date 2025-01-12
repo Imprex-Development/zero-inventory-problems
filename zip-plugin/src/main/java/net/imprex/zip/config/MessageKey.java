@@ -60,7 +60,12 @@ public enum MessageKey {
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}"),
-	UnableToLoadBackpack("unableToLoadBackpack", "Backpack can't be loaded!");
+	UnableToLoadBackpack("unableToLoadBackpack", "Backpack can't be loaded!"),
+	HistoryIsEmpty("historyIsEmpty", "Backpack history is empty!"),
+	CommandHistorySpacer("commandHistorySpacer", "§8[]§7========== §eZeroInventoryProblems History §7==========§8[]"),
+	CommandHistoryEntryHeader("commandHistoryHeader", "{0}: {1}"),
+	CommandHistoryEntryAdded("commandHistoryAdded", "  | §a+ x{0} {1}"),
+	CommandHistoryEntryRemoved("commandHistoryRemoved", "  | §c- x{0} {1}");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {

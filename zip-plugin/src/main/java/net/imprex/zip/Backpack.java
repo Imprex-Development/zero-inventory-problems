@@ -1,7 +1,12 @@
 package net.imprex.zip;
 
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,13 +18,21 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import com.google.common.collect.Lists;
+
 import net.imprex.zip.api.ZIPBackpack;
+import net.imprex.zip.api.ZIPBackpackHistory;
+import net.imprex.zip.api.ZIPBackpackHistory.HistoryConsumer;
 import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.migration.BackpackMigrator;
+import net.imprex.zip.util.FixedSizeQueue;
 
 public class Backpack implements ZIPBackpack {
+
+	public static final int VERSION = 100;
 
 	private final BackpackHandler backpackHandler;
 	private final MessageConfig messageConfig;
@@ -32,8 +45,12 @@ public class Backpack implements ZIPBackpack {
 	private final String typeRaw;
 	private final BackpackType type;
 
+	private final FixedSizeQueue<BackpackHistory> history;
+
 	private ItemStack[] content;
 	private Inventory inventory;
+
+	private final Map<Player, BackpackTransferPlayer> transfer = new WeakHashMap<>();
 
 	public Backpack(BackpackPlugin plugin, BackpackType type, UniqueId id) {
 		this.backpackHandler = plugin.getBackpackHandler();
@@ -50,6 +67,8 @@ public class Backpack implements ZIPBackpack {
 		this.inventory = Bukkit.createInventory(null, 9 * rows, displayName);
 		this.content = this.inventory.getContents();
 
+		this.history = new FixedSizeQueue<>(plugin.getBackpackConfig().general().historySize);
+
 		this.backpackHandler.registerBackpack(this);
 		
 		this.save();
@@ -61,19 +80,33 @@ public class Backpack implements ZIPBackpack {
 		this.identifierKey = plugin.getBackpackIdentifierKey();
 		this.storageKey = plugin.getBackpackStorageKey();
 
-		/*
-		 * Load backpack id from buffer but don't use it!
-		 * Just for later migration to SQL
-		 */
-		buffer.readByteArray();
-		this.id = id;
+		try {
+			// pooled buffer
+			buffer = BackpackMigrator.migrate(plugin, buffer);
 
-		this.typeRaw = buffer.readString();
-		this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
+			// read id
+			this.id = UniqueId.fromByteArray(buffer.readByteArray());
 
-		byte[] contentAsByteArray = buffer.readByteArray();
-		ItemStack[] content = NmsInstance.binaryToItemStack(contentAsByteArray).toArray(ItemStack[]::new);
-		this.content = content;
+			// read type
+			this.typeRaw = buffer.readString();
+			this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
+
+			// read content
+			byte[] contentAsByteArray = buffer.readByteArray();
+			ItemStack[] content = NmsInstance.binaryToItemStackArray(contentAsByteArray).toArray(ItemStack[]::new);
+			this.content = content;
+
+			// read history
+			this.history = new FixedSizeQueue<>(plugin.getBackpackConfig().general().historySize);
+			int historySize = buffer.readInt();
+			for (int i = 0; i < historySize; i++) {
+				this.history.add(BackpackHistory.read(buffer));
+			}
+		} finally {
+			// release buffer
+			buffer.release();
+			buffer = null;
+		}
 
 		if (this.type != null) {
 			String displayName = this.type.getDisplayName();
@@ -107,9 +140,17 @@ public class Backpack implements ZIPBackpack {
 			throw new NullPointerException("content can not be null");
 		}
 
+		// write latest version
+		buffer.writeInt(VERSION);
+
+		// write id, type and content
 		buffer.writeByteArray(this.id.toByteArray());
 		buffer.writeString(this.typeRaw);
-		buffer.writeByteArray(NmsInstance.itemstackToBinary(this.content));
+		buffer.writeByteArray(NmsInstance.itemstackArrayToBinary(this.content));
+
+		// write history
+		buffer.writeInt(this.history.size());
+		this.history.forEach(history -> history.write(buffer));
 	}
 
 	@Override
@@ -203,7 +244,57 @@ public class Backpack implements ZIPBackpack {
 				this.content[i] = null;
 			}
 		}
+
+		BackpackHistory.create(player.getUniqueId(), content, content);
+
 		return empty;
+	}
+
+	@Override
+	public List<ZIPBackpackHistory> getHistroy() {
+		return Collections.unmodifiableList(Lists.newArrayList(this.history.collection()));
+	}
+
+	@Override
+	public void computeHistory(UUID uuid, OffsetDateTime dateTime, HistoryConsumer consumer) {
+		ItemStack[] previous = this.content.clone();
+		consumer.consume();
+
+		Map<ItemStack, Integer> difference = BackpackHistory.difference(previous, this.content);
+		if (!difference.isEmpty()) {
+			this.history.add(new BackpackHistory(uuid, dateTime, difference));
+		}
+	}
+
+	@Override
+	public void addHistory(UUID uuid, OffsetDateTime dateTime, Map<ItemStack, Integer> items) {
+		this.history.add(new BackpackHistory(uuid, dateTime, items));
+	}
+
+	@Override
+	public void clearHistory() {
+		this.history.clear();
+	}
+
+	public void addToTransfer(Player player) {
+		BackpackTransferPlayer previous = this.transfer.put(player, new BackpackTransferPlayer());
+		if (!(previous == null || previous.isEmpty())) {
+			// close inventory was not triggered
+			this.addHistory(player.getUniqueId(), previous.getCreated(), previous.getItems());
+		}
+	}
+
+	public BackpackTransferPlayer getTransfer(Player player) {
+		return this.transfer.computeIfAbsent(player, target -> new BackpackTransferPlayer());
+	}
+
+	public void closeTransfer(Player player) {
+		BackpackTransferPlayer transfer = this.transfer.remove(player);
+		if (transfer == null || transfer.isEmpty()) {
+			return;
+		}
+
+		this.addHistory(player.getUniqueId(), transfer.getItems());
 	}
 
 	@Override

@@ -93,7 +93,7 @@ public class ZipNmsManager implements NmsManager {
 	}
 
 	@Override
-	public byte[] itemstackToBinary(ItemStack[] items) {
+	public byte[] itemstackArrayToBinary(ItemStack[] items) {
 		CompoundTag inventory = new CompoundTag();
 		ListTag list = new ListTag();
 		for (ItemStack itemStack : items) {
@@ -110,7 +110,7 @@ public class ZipNmsManager implements NmsManager {
 	}
 
 	@Override
-	public List<ItemStack> binaryToItemStack(byte[] binary) {
+	public List<ItemStack> binaryToItemStackArray(byte[] binary) {
 		CompoundTag nbt = binaryToNBT(binary);
 		List<ItemStack> items = new ArrayList<>();
 		if (nbt.contains("i", 9)) {
@@ -129,6 +129,33 @@ public class ZipNmsManager implements NmsManager {
 			}
 		}
 		return items;
+	}
+
+	@Override
+	public byte[] itemstackToBinary(ItemStack item) {
+		if (item == null || item.getType() == Material.AIR) {
+			return nbtToBinary(NBT_EMPTY_ITEMSTACK);
+		} else {
+			net.minecraft.world.item.ItemStack craftItem = CraftItemStack.asNMSCopy(item);
+			CompoundTag tag = (CompoundTag) craftItem.save(DEFAULT_REGISTRY);
+			return nbtToBinary(tag);
+		}
+	}
+
+	@Override
+	public ItemStack binaryToItemStack(byte[] binary) {
+		CompoundTag nbt = binaryToNBT(binary);
+
+		if (nbt.getString("id").equals("minecraft:air")) {
+			return new ItemStack(Material.AIR);
+		} else {
+			Optional<net.minecraft.world.item.ItemStack> optional = net.minecraft.world.item.ItemStack.parse(DEFAULT_REGISTRY, nbt);
+			if (optional.isPresent()) {
+				return CraftItemStack.asBukkitCopy(optional.get());
+			}
+		}
+
+		return null;
 	}
 
 	@Override

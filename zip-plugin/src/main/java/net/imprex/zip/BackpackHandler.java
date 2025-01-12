@@ -19,6 +19,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.google.common.io.ByteStreams;
 
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import net.imprex.zip.api.ZIPBackpack;
 import net.imprex.zip.api.ZIPBackpackType;
@@ -94,8 +95,8 @@ public class BackpackHandler implements ZIPHandler {
 		}
 
 		Path file = this.folderPath.resolve(backpack.getId().toString());
+		Ingrim4Buffer buffer = new Ingrim4Buffer(PooledByteBufAllocator.DEFAULT.buffer());
 		try (FileOutputStream outputStream = new FileOutputStream(file.toFile())) {
-			Ingrim4Buffer buffer = new Ingrim4Buffer(Unpooled.buffer());
 			((Backpack) backpack).save(buffer);
 
 			byte[] bytes = new byte[buffer.readableBytes()];
@@ -103,6 +104,8 @@ public class BackpackHandler implements ZIPHandler {
 			outputStream.write(bytes);
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			buffer.release();
 		}
 	}
 
@@ -149,9 +152,7 @@ public class BackpackHandler implements ZIPHandler {
 				uniqueId = UniqueId.fromByteArray(storageKey);
 
 				Backpack backpack = this.getBackpack(uniqueId);
-				if (backpack != null) {
-					return backpack;
-				}
+				return backpack;
 			}
 			
 			if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {

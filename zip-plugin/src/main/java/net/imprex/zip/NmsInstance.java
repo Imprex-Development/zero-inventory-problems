@@ -38,11 +38,19 @@ public class NmsInstance {
 		ZIPLogger.info("NMS adapter for server version \"" + nmsVersion + "\" found!");
 	}
 
-	public static byte[] itemstackToBinary(ItemStack[] items) {
+	public static byte[] itemstackArrayToBinary(ItemStack[] items) {
+		return instance.itemstackArrayToBinary(items);
+	}
+
+	public static List<ItemStack> binaryToItemStackArray(byte[] binary) {
+		return instance.binaryToItemStackArray(binary);
+	}
+
+	public static byte[] itemstackToBinary(ItemStack items) {
 		return instance.itemstackToBinary(items);
 	}
 
-	public static List<ItemStack> binaryToItemStack(byte[] binary) {
+	public static ItemStack binaryToItemStack(byte[] binary) {
 		return instance.binaryToItemStack(binary);
 	}
 

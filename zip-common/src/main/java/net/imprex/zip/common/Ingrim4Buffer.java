@@ -10,6 +10,10 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -97,6 +101,23 @@ public class Ingrim4Buffer extends ByteBuf {
 			throw new IllegalArgumentException("Attempt to write a string with a length greater than " + Short.MAX_VALUE + " to ByteBuf!");
 		this.writeVarInt(bytes.length);
 		this.buf.writeBytes(bytes);
+	}
+
+	public UUID readUUID() {
+		return new UUID(this.buf.readLong(), this.buf.readLong());
+	}
+
+	public void writeUUID(UUID uuid) {
+		this.buf.writeLong(uuid.getMostSignificantBits());
+		this.buf.writeLong(uuid.getLeastSignificantBits());
+	}
+
+	public OffsetDateTime readDateTime() {
+		return OffsetDateTime.ofInstant(Instant.ofEpochSecond(this.buf.readLong()), ZoneOffset.UTC);
+	}
+
+	public void writeDateTime(OffsetDateTime dateTime) {
+		this.buf.writeLong(dateTime.toEpochSecond());
 	}
 
 	/**
