@@ -2,6 +2,9 @@ general:
   checkForUpdates: true
   verbose: false
   locale: en_US
+  historySize: 10
+  dateZoneId: America/New_York
+  dateFormat: MM.dd.yyyy HH:mm
 type:
   big:
     uniqueName: 'big'

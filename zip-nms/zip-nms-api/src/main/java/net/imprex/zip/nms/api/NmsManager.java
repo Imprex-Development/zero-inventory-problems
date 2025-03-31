@@ -8,9 +8,13 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 public interface NmsManager {
 
-	byte[] itemstackToBinary(ItemStack[] items);
+	byte[] itemstackArrayToBinary(ItemStack[] items);
 
-	List<ItemStack> binaryToItemStack(byte[] binary);
+	List<ItemStack> binaryToItemStackArray(byte[] binary);
+
+	byte[] itemstackToBinary(ItemStack item);
+
+	ItemStack binaryToItemStack(byte[] binary);
 
 	void setSkullProfile(SkullMeta meta, String texture);
 

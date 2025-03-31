@@ -49,7 +49,7 @@ public class ZipNmsManager implements NmsManager {
 	}
 
 	@Override
-	public byte[] itemstackToBinary(ItemStack[] items) {
+	public byte[] itemstackArrayToBinary(ItemStack[] items) {
 		CompoundTag inventory = new CompoundTag();
 		ListTag list = new ListTag();
 		for (ItemStack itemStack : items) {
@@ -61,7 +61,7 @@ public class ZipNmsManager implements NmsManager {
 	}
 
 	@Override
-	public List<ItemStack> binaryToItemStack(byte[] binary) {
+	public List<ItemStack> binaryToItemStackArray(byte[] binary) {
 		CompoundTag nbt = binaryToNBT(binary);
 		List<ItemStack> items = new ArrayList<>();
 		if (nbt.contains("i", 9)) {
@@ -73,6 +73,19 @@ public class ZipNmsManager implements NmsManager {
 			}
 		}
 		return items;
+	}
+
+	@Override
+	public byte[] itemstackToBinary(ItemStack item) {
+		net.minecraft.world.item.ItemStack craftItem = CraftItemStack.asNMSCopy(item);
+		CompoundTag tag = craftItem.save(new CompoundTag());
+		return nbtToBinary(tag);
+	}
+
+	@Override
+	public ItemStack binaryToItemStack(byte[] binary) {
+		CompoundTag nbt = binaryToNBT(binary);
+		return CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of(nbt));
 	}
 
 	@Override

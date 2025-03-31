@@ -1,5 +1,9 @@
 package net.imprex.zip;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -18,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.imprex.zip.api.ZIPService;
 import net.imprex.zip.command.BackpackCommand;
 import net.imprex.zip.config.BackpackConfig;
+import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
@@ -30,6 +35,9 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 	private BackpackHandler backpackHandler;
 
 	private UpdateSystem updateSystem;
+
+	public ZoneId dateZone;
+	public DateTimeFormatter dateFormatter;
 
 	@Override
 	public void onLoad() {
@@ -47,6 +55,10 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 			NmsInstance.initialize();
 
 			this.backpackConfig.deserialize();
+
+			GeneralConfig generalConfig = this.backpackConfig.general();
+			this.dateZone = generalConfig.dateZoneId;
+			this.dateFormatter = DateTimeFormatter.ofPattern(generalConfig.dateFormat, generalConfig.dateLocale);
 
 			this.backpackRegistry.register();
 
@@ -108,6 +120,10 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 					§8[§eZeroInventoryProblems§8] §7Please contact your server administrator§8.
 					""");
 		}
+	}
+
+	public String formatDateTime(OffsetDateTime dateTime) {
+		return this.dateFormatter.format(dateTime.atZoneSameInstant(this.dateZone));
 	}
 
 	public NamespacedKey createNamespacedKey(String key) {

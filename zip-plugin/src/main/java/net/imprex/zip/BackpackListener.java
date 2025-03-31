@@ -3,6 +3,7 @@ package net.imprex.zip;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -47,7 +48,7 @@ public class BackpackListener implements Listener {
 	}
 
 	@EventHandler(ignoreCancelled = false)
-	public void onInventoryClick(InventoryClickEvent event) {
+	public void onInventoryClickBackpack(InventoryClickEvent event) {
 		ItemStack currentItem = event.getCurrentItem();
 		if (event.getClick() == ClickType.NUMBER_KEY) {
 			int hotbarSlot = event.getHotbarButton();
@@ -55,7 +56,7 @@ public class BackpackListener implements Listener {
 				currentItem = event.getWhoClicked().getInventory().getItem(hotbarSlot);
 			}
 		}
-		
+
 		if (!this.backpackHandler.isBackpack(currentItem)) {
 			return;
 		}
@@ -71,12 +72,67 @@ public class BackpackListener implements Listener {
 		}
 	}
 
+	/**
+	 * Handle priority events first and only log to history if not cancelled
+	 * 
+	 * @param event
+	 */
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+	public void onInventoryClickHistory(InventoryClickEvent event) {
+		Backpack backpack = this.backpackHandler.getBackpack(event.getClickedInventory());
+		if (backpack == null) {
+			return;
+		}
+
+		Player player = (Player) event.getWhoClicked();
+		BackpackTransferPlayer transfer = backpack.getTransfer(player);
+		ItemStack currentItem = event.getCurrentItem();
+
+		switch (event.getAction()) {
+		case SWAP_WITH_CURSOR:
+			transfer.track(event.getCursor(), event.getCursor().getAmount());
+			transfer.track(currentItem, -currentItem.getAmount());
+			break;
+
+		case HOTBAR_SWAP:
+			int hotbar = event.getHotbarButton();
+			if (hotbar == -1) {
+				return;
+			}
+
+			ItemStack hotbarItem = player.getInventory().getItem(hotbar);
+			transfer.track(hotbarItem, hotbarItem.getAmount());
+			transfer.track(currentItem, -currentItem.getAmount());
+			break;
+		
+		case PLACE_ALL:
+		case PLACE_SOME:
+		case PLACE_ONE:
+			transfer.track(event.getCursor(), event.getCursor().getAmount());
+			break;
+
+		case PICKUP_ALL:
+		case PICKUP_HALF:
+		case PICKUP_ONE:
+		case PICKUP_SOME:
+		case COLLECT_TO_CURSOR:
+		case DROP_ALL_SLOT:
+		case DROP_ONE_SLOT:
+			transfer.track(currentItem, -currentItem.getAmount());
+			break;
+
+		default:
+			return;
+		}
+	}
+
 	@EventHandler(ignoreCancelled = false)
 	public void onInventoryClose(InventoryCloseEvent event) {
 		Inventory topInventory = event.getPlayer().getOpenInventory().getTopInventory();
 		if (topInventory != null) {
 			Backpack backpack = this.backpackHandler.getBackpack(topInventory);
 			if (backpack != null) {
+				backpack.closeTransfer((Player) event.getPlayer());
 				backpack.save();
 			}
 		}
