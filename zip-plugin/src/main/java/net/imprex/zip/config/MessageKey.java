@@ -54,13 +54,14 @@ public enum MessageKey {
 	YourBackpackLinkRequestWasCancelled("yourBackpackLinkRequestWasCancelled", "Your backpack link request was cancelled"),
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
+	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked at the same time"),
 	PleaseEnterANumber("pleaseEnterANumber", "Please enter a number"),
 	EnterANumberBetweenArgsAndArgs("enterANumberBetweenArgsAndArgs", "Please enter a number between {0} and {1}"),
 	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}"),
-	UnableToLoadBackpack("unableToLoadBackpack", "Backpack can't be loaded!");
+	UnableToLoadBackpack("unableToLoadBackpack", "Backpack id §8\"§e{0}§8\" §7can't be loaded!");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {

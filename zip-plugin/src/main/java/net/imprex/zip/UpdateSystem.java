@@ -1,59 +1,66 @@
+/**
+ * @author Imprex-Development
+ * @see <a href="https://github.com/Imprex-Development/orebfuscator/blob/master/orebfuscator-plugin/src/main/java/net/imprex/orebfuscator/UpdateSystem.java">UpdateSystem.java</a>
+ */
 package net.imprex.zip;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.annotations.SerializedName;
 
+import net.imprex.zip.common.MinecraftVersion;
+import net.imprex.zip.common.Version;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
-import net.imprex.zip.util.ZIPLogger;
+import net.imprex.zip.util.AbstractHttpService;
+import net.imprex.zip.util.ConsoleUtil;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 
-/**
- * @author Imprex-Development
- * @see <a href="https://github.com/Imprex-Development/orebfuscator/blob/master/orebfuscator-plugin/src/main/java/net/imprex/orebfuscator/UpdateSystem.java">UpdateSystem.java</a>
- */
-public class UpdateSystem {
+public class UpdateSystem extends AbstractHttpService {
 
-	private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(?:-b(\\d+))?");
+	private static final Pattern DEV_VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(?:-b(?<build>\\d+))?");
 
-	private static final String API_LATEST = "https://api.github.com/repos/Imprex-Development/zero-inventory-problems/releases/latest";
-	private static final long UPDATE_COOLDOWN = 1_800_000L; // 30min
-
-	private static final String repeatString(String message, int repeat) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (int i = 0; i < repeat; i++) {
-			stringBuilder.append(message);
-		}
-		return stringBuilder.toString();
+	private static boolean isDevVersion(String version) {
+		Matcher matcher = DEV_VERSION_PATTERN.matcher(version);
+		return matcher.find() && matcher.group("build") != null;
 	}
 
-	private final Lock lock = new ReentrantLock();
+	private static final String API_URI = "https://api.modrinth.com/v2/project/zero-inventory-problems-zip-backpacks/version?loaders=%s&game_versions=%s";
+	private static final String DOWNLOAD_URI = "https://modrinth.com/plugin/zero-inventory-problems-zip-backpacks/version/%s";
+
+	private static final Duration CACHE_DURATION = Duration.ofMinutes(10L);
 
 	private final BackpackPlugin plugin;
 	private final GeneralConfig generalConfig;
 	private final MessageConfig messageConfig;
 
-	private JsonObject releaseData;
-	private long updateCooldown = -1;
-	private int failedAttempts = 0;
+	private final AtomicReference<Instant> validUntil = new AtomicReference<>();
+	private final AtomicReference<CompletableFuture<Optional<ModrinthVersion>>> latestVersion = new AtomicReference<>();
 
 	public UpdateSystem(BackpackPlugin plugin) {
+		super(plugin);
+
 		this.plugin = plugin;
 		this.generalConfig = plugin.getBackpackConfig().general();
 		this.messageConfig = plugin.getBackpackConfig().message();
@@ -61,98 +68,105 @@ public class UpdateSystem {
 		this.checkForUpdates();
 	}
 
-	private JsonObject getReleaseData() {
-		this.lock.lock();
-		try {
-			long systemTime = System.currentTimeMillis();
+	private CompletableFuture<Optional<ModrinthVersion>> requestLatestVersion() {
+		String installedVersion = this.plugin.getDescription().getVersion();
+		if (!this.generalConfig.checkForUpdates || isDevVersion(installedVersion)) {
+			ZIPLogger.debug("UpdateSystem - Update check disabled or dev version detected; skipping");
+			return CompletableFuture.completedFuture(Optional.empty());
+		}
 
-			if (this.failedAttempts < 5) {
+		var uri = String.format(API_URI, "bukkit", MinecraftVersion.current());
+		return HTTP.sendAsync(request(uri).build(), json(ModrinthVersion[].class)).thenApply(request -> {
+			var version = Version.parse(installedVersion);
+			var latestVersion = Arrays.stream(request.body())
+					.filter(e -> Objects.equals(e.versionType, "release"))
+					.filter(e -> Objects.equals(e.status, "listed"))
+					.sorted(Comparator.reverseOrder())
+					.findFirst();
 
-				if (this.releaseData != null || systemTime - this.updateCooldown > UPDATE_COOLDOWN) {
-					try {
-						URL url = new URL(API_LATEST);
-						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-						try (InputStreamReader inputStreamReader = new InputStreamReader(connection.getInputStream())) {
-							this.releaseData = JsonParser.parseReader(inputStreamReader).getAsJsonObject();
-							this.updateCooldown = systemTime;
-						}
-					} catch (IOException e) {
-						ZIPLogger.warn("Unable to fetch latest update from: " + API_LATEST);
-						ZIPLogger.warn(e.toString());
+			latestVersion.ifPresentOrElse(
+					v -> ZIPLogger.debug("UpdateSystem - Fetched latest version " + v.version),
+					() -> ZIPLogger.debug("UpdateSystem - Couldn't fetch latest version"));
 
-						if (++this.failedAttempts == 5) {
-							this.updateCooldown = systemTime;
-						}
-					}
-				}
+			return latestVersion.map(v -> version.isBelow(v.version) ? v : null);
+		}).exceptionally(throwable -> {
+			ZIPLogger.warn("UpdateSystem - Unable to fetch latest version", throwable);
+			return Optional.empty();
+		});
+	}
 
-			} else if (systemTime - this.updateCooldown > UPDATE_COOLDOWN) {
-				this.failedAttempts = 0;
-				this.updateCooldown = -1;
-				return this.getReleaseData();
-			}
+	private CompletableFuture<Optional<ModrinthVersion>> getLatestVersion() {
+		Instant validUntil = this.validUntil.get();
+		if (validUntil != null && validUntil.compareTo(Instant.now()) < 0 && this.validUntil.compareAndSet(validUntil, null)) {
+			ZIPLogger.debug("UpdateSystem - Cleared latest cached version");
+			this.latestVersion.set(null);
+		}
 
-			return this.releaseData;
-		} finally {
-			this.lock.unlock();
+	    CompletableFuture<Optional<ModrinthVersion>> existingFuture = this.latestVersion.get();
+	    if (existingFuture != null) {
+	        return existingFuture;
+	    }
+
+		CompletableFuture<Optional<ModrinthVersion>> newFuture = new CompletableFuture<>();
+		if (this.latestVersion.compareAndSet(null, newFuture)) {
+			ZIPLogger.debug("UpdateSystem - Starting to check for updates");
+			this.requestLatestVersion().thenAccept(version -> {
+				this.validUntil.set(Instant.now().plus(CACHE_DURATION));
+				newFuture.complete(version);
+			});
+			return newFuture;
+		} else {
+			return this.latestVersion.get();
 		}
 	}
 
-	private String getTagName() {
-		JsonObject releaseData = this.getReleaseData();
-		if (releaseData != null && releaseData.has("tag_name")) {
-			return releaseData.getAsJsonPrimitive("tag_name").getAsString();
-		}
-		return null;
-	}
-
-	private String getHtmlUrl() {
-		JsonObject releaseData = this.getReleaseData();
-		if (releaseData != null && releaseData.has("html_url")) {
-			return releaseData.getAsJsonPrimitive("html_url").getAsString();
-		}
-		return null;
-	}
-
-	private boolean isDevVersion(String version) {
-		Matcher matcher = VERSION_PATTERN.matcher(version);
-		return matcher.find() && matcher.groupCount() == 4;
-	}
-
-	private boolean isUpdateAvailable() {
-		String version = this.plugin.getDescription().getVersion();
-		if (this.generalConfig.checkForUpdates && !this.isDevVersion(version)) {
-			String tagName = this.getTagName();
-			return tagName != null && !version.equals(tagName);
-		}
-		return false;
+	private void ifNewerVersionAvailable(Consumer<ModrinthVersion> consumer) {
+		this.getLatestVersion().thenAccept(o -> o.ifPresent(consumer));
 	}
 
 	private void checkForUpdates() {
-		Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-			if (this.isUpdateAvailable()) {
-				String url = " " + this.getHtmlUrl() + " ";
-				int lineLength = (int) Math.ceil((url.length() - 18) / 2d);
-				String line = repeatString("=", lineLength);
-
-				ZIPLogger.warn(line + " Update available " + line);
-				ZIPLogger.warn(url);
-				ZIPLogger.warn(repeatString("=", lineLength * 2 + 18));
-			}
+		this.ifNewerVersionAvailable(version -> {
+			String downloadUri = String.format(DOWNLOAD_URI, version.version);
+			ConsoleUtil.printBox(Level.WARNING, "UPDATE AVAILABLE", "", downloadUri);
 		});
 	}
 
 	public void checkForUpdates(Player player) {
-		Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-			if (this.isUpdateAvailable()) {
-				BaseComponent[] components = new ComponentBuilder(String.format("%s%s ", this.messageConfig.get(MessageKey.ANewReleaseIsAvailable)))
-						.append(this.messageConfig.getWithoutPrefix(MessageKey.ClickHere))
-						.event(new ClickEvent(ClickEvent.Action.OPEN_URL, this.getHtmlUrl()))
-						.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(this.messageConfig.getWithoutPrefix(MessageKey.ClickHereToSeeTheLatestRelease)))).create();
-				Bukkit.getScheduler().runTask(this.plugin, () -> {
-					player.spigot().sendMessage(components);
-				});
-			}
+		this.ifNewerVersionAvailable(version -> {
+			String downloadUri = String.format(DOWNLOAD_URI, version.version);
+			BaseComponent[] components = new ComponentBuilder(String.format("%s%s ", this.messageConfig.get(MessageKey.ANewReleaseIsAvailable)))
+					.append(this.messageConfig.getWithoutPrefix(MessageKey.ClickHere))
+					.event(new ClickEvent(ClickEvent.Action.OPEN_URL, downloadUri))
+					.event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(new ComponentBuilder(this.messageConfig.getWithoutPrefix(MessageKey.ClickHereToSeeTheLatestRelease)).create()))).create();
+			Bukkit.getScheduler().runTask(this.plugin, () -> {
+				player.spigot().sendMessage(components);
+			});
 		});
+	}
+
+	public static class ModrinthVersion implements Comparable<ModrinthVersion> {
+
+		private static final Comparator<ModrinthVersion> COMPARATOR = 
+				Comparator.comparing(e -> e.version, Comparator.nullsLast(Version::compareTo));
+
+		@SerializedName("version_number")
+		public Version version;
+
+		@SerializedName("game_versions")
+		public List<Version> gameVersions;
+
+		@SerializedName("version_type")
+		public String versionType;
+
+		@SerializedName("loaders")
+		public List<String> loaders;
+		
+		@SerializedName("status")
+		public String status;
+
+		@Override
+		public int compareTo(ModrinthVersion other) {
+			return COMPARATOR.compare(this, other);
+		}
 	}
 }

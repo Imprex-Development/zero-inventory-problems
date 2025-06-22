@@ -1,4 +1,4 @@
-package net.imprex.zip.nms.v1_21_R4;
+package net.imprex.zip.nms.v1_21_R5;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_21_R5.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -44,7 +44,7 @@ import net.minecraft.world.item.component.ResolvableProfile;
 
 public class ZipNmsManager implements NmsManager {
 
-	private static final int DATA_VERSION = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+	private static final int DATA_VERSION = SharedConstants.getCurrentVersion().dataVersion().version();
 
 	@SuppressWarnings("deprecation")
 	private static final RegistryAccess DEFAULT_REGISTRY = MinecraftServer.getServer().registryAccess();
@@ -53,7 +53,7 @@ public class ZipNmsManager implements NmsManager {
 	private static final DynamicOps<JsonElement> DYNAMIC_OPS_JSON = DEFAULT_REGISTRY.createSerializationContext(JsonOps.INSTANCE);
 	
 	private static final BiConsumer<SkullMeta, GameProfile> SET_PROFILE;
-	
+
 	static {
 		BiConsumer<SkullMeta, GameProfile> setProfile = (meta, profile) -> {
 			throw new NullPointerException("Unable to find 'setProfile' method!");

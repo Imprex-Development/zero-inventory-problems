@@ -19,6 +19,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import net.imprex.zip.api.ZIPBackpackType;
+import net.imprex.zip.common.UniqueId;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
 
@@ -114,7 +115,9 @@ public class BackpackListener implements Listener {
 			if (backpack != null) {
 				backpack.open(event.getPlayer());
 			} else {
-				this.messageConfig.send(event.getPlayer(), MessageKey.UnableToLoadBackpack);
+				UniqueId id = this.backpackHandler.getUniqueId(event.getItem());
+				String idString = id != null ? id.toString() : "NOT READABLE";
+				this.messageConfig.send(event.getPlayer(), MessageKey.UnableToLoadBackpack, idString);
 			}
 		}
 	}

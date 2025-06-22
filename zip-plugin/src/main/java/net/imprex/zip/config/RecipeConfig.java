@@ -6,7 +6,7 @@ import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 
-import net.imprex.zip.util.ZIPLogger;
+import net.imprex.zip.common.ZIPLogger;
 
 public class RecipeConfig {
 

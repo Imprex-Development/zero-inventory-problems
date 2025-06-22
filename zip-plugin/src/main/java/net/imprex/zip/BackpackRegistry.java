@@ -12,10 +12,10 @@ import org.bukkit.entity.Player;
 import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.api.ZIPRecipe;
 import net.imprex.zip.api.ZIPRegistry;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.config.BackpackConfig;
 import net.imprex.zip.config.BackpackTypeConfig;
 import net.imprex.zip.config.BackpackTypeListConfig;
-import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackRegistry implements ZIPRegistry {
 

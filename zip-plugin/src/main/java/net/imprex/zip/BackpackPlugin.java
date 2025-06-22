@@ -17,8 +17,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import net.imprex.zip.api.ZIPService;
 import net.imprex.zip.command.BackpackCommand;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.config.BackpackConfig;
-import net.imprex.zip.util.ZIPLogger;
 
 public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 
@@ -45,6 +45,8 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 	public void onEnable() {
 		try {
 			NmsInstance.initialize();
+			
+			BackpackMigrator.checkForMigrations(this.backpackHandler.getFolderPath());
 
 			this.backpackConfig.deserialize();
 

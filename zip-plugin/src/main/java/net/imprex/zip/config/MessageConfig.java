@@ -20,7 +20,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import net.imprex.zip.BackpackPlugin;
-import net.imprex.zip.util.ZIPLogger;
+import net.imprex.zip.common.ZIPLogger;
 import net.md_5.bungee.api.ChatColor;
 
 public class MessageConfig {
