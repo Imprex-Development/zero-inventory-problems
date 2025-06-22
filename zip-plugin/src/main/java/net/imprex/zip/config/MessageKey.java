@@ -15,7 +15,6 @@ public enum MessageKey {
 	CommandHelpGive("commandHelpGive", "§8/§7zip §egive §7[§etype§7] §7<§eplayer§7> §8| §7Give yourself a backpack§8."),
 	CommandHelpType("commandHelpType", "§8/§7zip §etype §8| §7Get a list of all backpacks§8."),
 	CommandHelpLore("commandHelpLore", "§8/§7zip §elore §8| §7Write a custom lore§8."),
-	CommandHelpMigrate("commandHelpMigrate", "§8/§7zip §emigrate §8| §7Migrate all existing backpacks to the new format§8."),
 	CommandHelpEnd("commandHelpEnd", "§8[]§7========== §eZeroInventoryProblems §7==========§8[]"),
 	CommandTypeStart("commandTypeStart", "§8[]§7========== §eZeroInventoryProblems Types §7==========§8[]"),
 	CommandTypeContent("commandTypeContent", "  §8-§e{0}"),
