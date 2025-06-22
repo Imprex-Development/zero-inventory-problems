@@ -10,7 +10,7 @@ public interface NmsManager {
 
 	JsonObject itemstackToJsonElement(ItemStack[] items);
 
-	ItemStack[] jsonElementToItemStack(JsonObject jsonElement);
+	ItemStackContainerResult jsonElementToItemStack(JsonObject jsonElement);
 	
 	JsonObject migrateToJsonElement(byte[] binary);
 

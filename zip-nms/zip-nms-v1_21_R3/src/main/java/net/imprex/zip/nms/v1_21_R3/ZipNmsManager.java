@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -26,9 +24,10 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 
-import net.imprex.zip.common.BPKey;
+import net.imprex.zip.common.BPConstants;
 import net.imprex.zip.common.ReflectionUtil;
-import net.imprex.zip.common.ZIPLogger;
+import net.imprex.zip.nms.api.ItemStackContainerResult;
+import net.imprex.zip.nms.api.ItemStackWithSlot;
 import net.imprex.zip.nms.api.NmsManager;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.RegistryAccess;
@@ -102,35 +101,31 @@ public class ZipNmsManager implements NmsManager {
 			DataResult<JsonElement> result = net.minecraft.world.item.ItemStack.CODEC.encodeStart(DYNAMIC_OPS_JSON, minecraftItem);
 			JsonObject resultJson = result.getOrThrow().getAsJsonObject();
 			
-			resultJson.addProperty(BPKey.INVENTORY_SLOT, slot);
+			resultJson.addProperty(BPConstants.KEY_INVENTORY_SLOT, slot);
 			jsonItems.add(resultJson);
 		}
 		
 		JsonObject outputJson = new JsonObject();
-		outputJson.addProperty(BPKey.INVENTORY_VERSION, 2);
-		outputJson.addProperty(BPKey.INVENTORY_DATA_VERSION, DATA_VERSION);
-		outputJson.addProperty(BPKey.INVENTORY_ITEMS_SIZE, items.length);
-		outputJson.add(BPKey.INVENTORY_ITEMS, jsonItems);
+		outputJson.addProperty(BPConstants.KEY_INVENTORY_VERSION, BPConstants.INVENTORY_VERSION);
+		outputJson.addProperty(BPConstants.KEY_INVENTORY_DATA_VERSION, DATA_VERSION);
+		outputJson.addProperty(BPConstants.KEY_INVENTORY_ITEMS_SIZE, items.length);
+		outputJson.add(BPConstants.KEY_INVENTORY_ITEMS, jsonItems);
 		return outputJson;
 	}
 
 	@Override
-	public ItemStack[] jsonElementToItemStack(JsonObject json) {
+	public ItemStackContainerResult jsonElementToItemStack(JsonObject json) {
 		// check if current version the same
-		if (json.get(BPKey.INVENTORY_VERSION).getAsInt() != 2) {
+		if (json.get(BPConstants.KEY_INVENTORY_VERSION).getAsInt() != BPConstants.INVENTORY_VERSION) {
 			throw new IllegalStateException("Unable to convert binary to itemstack because zip version is missmatching");
 		}
 		
-		int dataVersion = json.get(BPKey.INVENTORY_DATA_VERSION).getAsInt();
-		int itemsSize = json.get(BPKey.INVENTORY_ITEMS_SIZE).getAsInt();
+		int dataVersion = json.get(BPConstants.KEY_INVENTORY_DATA_VERSION).getAsInt();
+		int itemsSize = json.get(BPConstants.KEY_INVENTORY_ITEMS_SIZE).getAsInt();
 		
-		// convert json into bukkit item
-		ItemStack[] items = new ItemStack[itemsSize];
-		Arrays.fill(items, new ItemStack(Material.AIR));
+		List<ItemStackWithSlot> items = new ArrayList<>();
 		
-		List<ItemStack> duplicateSlot = null;
-		
-		JsonArray jsonItems = json.get(BPKey.INVENTORY_ITEMS).getAsJsonArray();
+		JsonArray jsonItems = json.get(BPConstants.KEY_INVENTORY_ITEMS).getAsJsonArray();
 		for (JsonElement item : jsonItems) {
 			Dynamic<JsonElement> dynamicItem = new Dynamic<>(JsonOps.INSTANCE, item);
 			Dynamic<JsonElement> dynamicItemFixed = DataFixers.getDataFixer()
@@ -141,56 +136,12 @@ public class ZipNmsManager implements NmsManager {
 					.getOrThrow();
 			
 			ItemStack bukkitItem = CraftItemStack.asCraftMirror(minecraftItem);
-			int slot = item.getAsJsonObject().get(BPKey.INVENTORY_SLOT).getAsInt();
+			int slot = item.getAsJsonObject().get(BPConstants.KEY_INVENTORY_SLOT).getAsInt();
 			
-			if (itemsSize <= slot) {
-				// something went wrong !? maybe user modified it him self
-				ZIPLogger.warn("Slot size was extended from " + itemsSize + " to " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
-				
-				ItemStack[] newItems = new ItemStack[slot + 1];
-				System.arraycopy(items, 0, newItems, 0, items.length);
-				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
-				items = newItems;
-			}
-			
-			if (items[slot].getType() != Material.AIR) {
-				if (duplicateSlot == null) {
-					duplicateSlot = new ArrayList<>();
-				}
-				duplicateSlot.add(bukkitItem);
-				ZIPLogger.warn("Duplicate item found on slot " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
-			} else {
-				items[slot] = bukkitItem;
-			}
+			items.add(new ItemStackWithSlot(slot, bukkitItem));
 		}
 		
-		// fill existing empty slots with duplicate item
-		while (duplicateSlot != null && !duplicateSlot.isEmpty()) {
-			outher: for (Iterator<ItemStack> iterator = duplicateSlot.iterator(); iterator.hasNext();) {
-				ItemStack itemStack = (ItemStack) iterator.next();
-				
-				for (int i = 0; i < items.length; i++) {
-					if (items[i].getType() == Material.AIR) {
-						items[i] = itemStack;
-						iterator.remove();
-						break;
-					} else if (i == items.length - 1) {
-						break outher;
-					}
-				}
-			}
-
-			// extend slot limit and try again
-			if (!duplicateSlot.isEmpty()) {
-				int extendedSlots = items.length + duplicateSlot.size();
-				ItemStack[] newItems = new ItemStack[extendedSlots];
-				System.arraycopy(items, 0, newItems, 0, items.length);
-				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
-				items = newItems;
-			}
-		}
-		
-		return items;
+		return new ItemStackContainerResult(itemsSize, items);
 	}
 	
 	@Override
@@ -223,7 +174,7 @@ public class ZipNmsManager implements NmsManager {
 				DataResult<JsonElement> result = net.minecraft.world.item.ItemStack.CODEC.encodeStart(DYNAMIC_OPS_JSON, minecraftItem);
 				JsonObject resultJson = result.getOrThrow().getAsJsonObject();
 				
-				resultJson.addProperty(BPKey.INVENTORY_SLOT, currentSlot);
+				resultJson.addProperty(BPConstants.KEY_INVENTORY_SLOT, currentSlot);
 				jsonItems.add(resultJson);
 				
 				currentSlot++;
@@ -231,10 +182,10 @@ public class ZipNmsManager implements NmsManager {
 		}
 		
 		JsonObject json = new JsonObject();
-		json.addProperty(BPKey.INVENTORY_VERSION, 2);
-		json.addProperty(BPKey.INVENTORY_DATA_VERSION, DATA_VERSION);
-		json.addProperty(BPKey.INVENTORY_ITEMS_SIZE, list.size());
-		json.add(BPKey.INVENTORY_ITEMS, jsonItems);
+		json.addProperty(BPConstants.KEY_INVENTORY_VERSION, BPConstants.INVENTORY_VERSION);
+		json.addProperty(BPConstants.KEY_INVENTORY_DATA_VERSION, DATA_VERSION);
+		json.addProperty(BPConstants.KEY_INVENTORY_ITEMS_SIZE, list.size());
+		json.add(BPConstants.KEY_INVENTORY_ITEMS, jsonItems);
 		return json;
 	}
 

@@ -103,7 +103,11 @@ public class BackpackHandler implements ZIPHandler {
 		}
 		
 		JsonObject json = new JsonObject();
-		((Backpack) backpack).save(json);
+		if (backpack instanceof Backpack internalBackpack) {
+			internalBackpack.save(json);
+		} else {
+			throw new IllegalArgumentException("Backpack object is not a ZIPBackpack");
+		}
 
 		Path file = this.getPathForId(backpack.getId());
 		try (FileOutputStream outputStream = new FileOutputStream(file.toFile());
@@ -162,7 +166,11 @@ public class BackpackHandler implements ZIPHandler {
 				}
 			}
 			
-			if (!this.loadingIssue.contains(uniqueId) && dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
+			if (this.loadingIssue.contains(uniqueId)) {
+				return null;
+			}
+			
+			if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
 				String backpackIdentifier = dataContainer.get(this.backpackIdentifierKey, PersistentDataType.STRING);
 				BackpackType backpackType = this.registry.getTypeByName(backpackIdentifier);
 				if (backpackType == null) {
@@ -227,5 +235,9 @@ public class BackpackHandler implements ZIPHandler {
 	
 	private Path getPathForId(ZIPUniqueId id) {
 		return this.folderPath.resolve(id.toString() + ".json");
+	}
+	
+	public Path getFolderPath() {
+		return this.folderPath;
 	}
 }

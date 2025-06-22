@@ -62,12 +62,7 @@ public enum MessageKey {
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}"),
-	UnableToLoadBackpack("unableToLoadBackpack", "Backpack id §8\"§e{0}§8\" §7can't be loaded!"),
-	CommandMigrateUsage("commandMigrateUsage", "Use: §8/§7zip migrate §econfirm"),
-	CommandMigrateOperationStarted("commandMigrateOperationStarted", "Starting migrating process, this could freeze the server for a moment"),
-	CommandMigrateOperationFound("commandMigrateOperationFound", "Migration found §e{0} §7outdated backpacks. Starting converting..."),
-	CommandMigrateOperationDone("commandMigrateOperationDone", "Migration finished. §e{0}§8/§e{1} §7backpacks migrated and §e{2} §7failed to migrate in §e{3} §7seconds."),
-	CommandMigrateOperationFailed("commandMigrateOperationFailed", "Migration failed. Look inside the console for more info");
+	UnableToLoadBackpack("unableToLoadBackpack", "Backpack id §8\"§e{0}§8\" §7can't be loaded!");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {

@@ -45,6 +45,8 @@ public class BackpackPlugin extends JavaPlugin implements Listener, ZIPService {
 	public void onEnable() {
 		try {
 			NmsInstance.initialize();
+			
+			BackpackMigrator.checkForMigrations(this.backpackHandler.getFolderPath());
 
 			this.backpackConfig.deserialize();
 

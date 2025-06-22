@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 
 import net.imprex.zip.common.MinecraftVersion;
 import net.imprex.zip.common.ZIPLogger;
+import net.imprex.zip.nms.api.ItemStackContainerResult;
 import net.imprex.zip.nms.api.NmsManager;
 
 public class NmsInstance {
@@ -43,7 +44,7 @@ public class NmsInstance {
 		return instance.itemstackToJsonElement(items);
 	}
 
-	public static ItemStack[] jsonElementToItemStack(JsonObject jsonElement) {
+	public static ItemStackContainerResult jsonElementToItemStack(JsonObject jsonElement) {
 		return instance.jsonElementToItemStack(jsonElement);
 	}
 

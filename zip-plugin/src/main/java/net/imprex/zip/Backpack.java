@@ -1,5 +1,9 @@
 package net.imprex.zip;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -17,10 +21,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import net.imprex.zip.api.ZIPBackpack;
-import net.imprex.zip.common.BPKey;
+import net.imprex.zip.common.BPConstants;
 import net.imprex.zip.common.UniqueId;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
+import net.imprex.zip.nms.api.ItemStackContainerResult;
+import net.imprex.zip.nms.api.ItemStackWithSlot;
 
 public class Backpack implements ZIPBackpack {
 	
@@ -74,11 +81,12 @@ public class Backpack implements ZIPBackpack {
 		
 		this.id = id;
 
-		this.typeRaw = json.get(BPKey.TYPE_RAW).getAsString();
+		this.typeRaw = json.get(BPConstants.KEY_TYPE_RAW).getAsString();
 		this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
 
-		JsonObject contentAsJson = json.getAsJsonObject(BPKey.INVENTORY);
-		ItemStack[] content = NmsInstance.jsonElementToItemStack(contentAsJson);
+		JsonObject contentAsJson = json.getAsJsonObject(BPConstants.KEY_INVENTORY);
+		ItemStackContainerResult contentResult = NmsInstance.jsonElementToItemStack(contentAsJson);
+		ItemStack[] content = this.parseItemStackList(contentResult);
 		this.content = content;
 
 		if (this.type != null) {
@@ -103,6 +111,68 @@ public class Backpack implements ZIPBackpack {
 
 		this.backpackHandler.registerBackpack(this);
 	}
+	
+	private ItemStack[] parseItemStackList(ItemStackContainerResult result) {
+		int containerSize = result.containerSize();
+		
+		ItemStack[] items = new ItemStack[containerSize];
+		Arrays.fill(items, new ItemStack(Material.AIR));
+		
+		List<ItemStack> duplicateSlot = null;
+		
+		for (ItemStackWithSlot itemWithSlot : result.items()) {
+			ItemStack item = itemWithSlot.item();
+			int slot = itemWithSlot.slot();
+			
+			if (containerSize <= slot) {
+				// something went wrong !? maybe user modified it him self
+				ZIPLogger.warn("Slot size was extended from " + containerSize + " to " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
+				
+				ItemStack[] newItems = new ItemStack[slot + 1];
+				System.arraycopy(items, 0, newItems, 0, items.length);
+				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
+				items = newItems;
+			}
+			
+			if (items[slot].getType() != Material.AIR) {
+				if (duplicateSlot == null) {
+					duplicateSlot = new ArrayList<>();
+				}
+				duplicateSlot.add(item);
+				ZIPLogger.warn("Duplicate item found on slot " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
+			} else {
+				items[slot] = item;
+			}
+		}
+		
+		// fill existing empty slots with duplicate item
+		while (duplicateSlot != null && !duplicateSlot.isEmpty()) {
+			outher: for (Iterator<ItemStack> iterator = duplicateSlot.iterator(); iterator.hasNext();) {
+				ItemStack itemStack = (ItemStack) iterator.next();
+				
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].getType() == Material.AIR) {
+						items[i] = itemStack;
+						iterator.remove();
+						break;
+					} else if (i == items.length - 1) {
+						break outher;
+					}
+				}
+			}
+
+			// extend slot limit and try again
+			if (!duplicateSlot.isEmpty()) {
+				int extendedSlots = items.length + duplicateSlot.size();
+				ItemStack[] newItems = new ItemStack[extendedSlots];
+				System.arraycopy(items, 0, newItems, 0, items.length);
+				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
+				items = newItems;
+			}
+		}
+		
+		return items;
+	}
 
 	public void save(JsonObject json) {
 		if (this.inventory != null) {
@@ -113,10 +183,10 @@ public class Backpack implements ZIPBackpack {
 			throw new NullPointerException("content can not be null");
 		}
 
-		json.addProperty(BPKey.VERSION, 2);
-		json.addProperty(BPKey.ID, this.id.toString());
-		json.addProperty(BPKey.TYPE_RAW, this.typeRaw);
-		json.add(BPKey.INVENTORY, NmsInstance.itemstackToJsonElement(this.content));
+		json.addProperty(BPConstants.KEY_VERSION, BPConstants.VERSION);
+		json.addProperty(BPConstants.KEY_ID, this.id.toString());
+		json.addProperty(BPConstants.KEY_TYPE_RAW, this.typeRaw);
+		json.add(BPConstants.KEY_INVENTORY, NmsInstance.itemstackToJsonElement(this.content));
 	}
 
 	@Override
