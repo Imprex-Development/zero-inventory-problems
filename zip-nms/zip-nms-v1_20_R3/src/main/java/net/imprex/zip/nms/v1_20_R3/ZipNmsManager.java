@@ -111,7 +111,7 @@ public class ZipNmsManager implements NmsManager {
 			
 			if (itemsSize <= slot) {
 				// something went wrong !? maybe user modified it him self
-				ZIPLogger.warn("Slot size was extended from " + itemsSize + " to " + slot + " this shoudt not happen. Do not change the slot number inside the config manuel!?");
+				ZIPLogger.warn("Slot size was extended from " + itemsSize + " to " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
 				
 				ItemStack[] newItems = new ItemStack[slot + 1];
 				System.arraycopy(items, 0, newItems, 0, items.length);
@@ -124,7 +124,7 @@ public class ZipNmsManager implements NmsManager {
 					duplicateSlot = new ArrayList<>();
 				}
 				duplicateSlot.add(bukkitItem);
-				ZIPLogger.warn("Duplicate item found on slot " + slot + " this shoudt not happen. Do not change the slot number inside the config manuel!?");
+				ZIPLogger.warn("Duplicate item found on slot " + slot + " this should not happen. Do not change the slot number inside the config manually!?");
 			} else {
 				items[slot] = bukkitItem;
 			}

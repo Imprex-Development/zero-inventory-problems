@@ -36,7 +36,7 @@ public class MigrateCommand extends BackpackSubCommand {
 		int statisticSuccessful = 0;
 		int statisticFailed = 0;
 
-		this.messageConfig.send(sender, MessageKey.CommandMigrateOperationStartet);
+		this.messageConfig.send(sender, MessageKey.CommandMigrateOperationStarted);
 
 		Path folderPath = Path.of(plugin.getDataFolder().getAbsolutePath(), "storage");
 		try (Stream<Path> stream = Files.walk(folderPath, 1)) {
