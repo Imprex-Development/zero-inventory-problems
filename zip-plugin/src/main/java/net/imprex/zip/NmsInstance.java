@@ -2,15 +2,16 @@
 package net.imprex.zip;
 
 import java.lang.reflect.Constructor;
-import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.google.gson.JsonObject;
+
 import net.imprex.zip.common.MinecraftVersion;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.nms.api.NmsManager;
-import net.imprex.zip.util.ZIPLogger;
 
 public class NmsInstance {
 
@@ -38,12 +39,16 @@ public class NmsInstance {
 		ZIPLogger.info("NMS adapter for server version \"" + nmsVersion + "\" found!");
 	}
 
-	public static byte[] itemstackToBinary(ItemStack[] items) {
-		return instance.itemstackToBinary(items);
+	public static JsonObject itemstackToJsonElement(ItemStack[] items) {
+		return instance.itemstackToJsonElement(items);
 	}
 
-	public static List<ItemStack> binaryToItemStack(byte[] binary) {
-		return instance.binaryToItemStack(binary);
+	public static ItemStack[] jsonElementToItemStack(JsonObject jsonElement) {
+		return instance.jsonElementToItemStack(jsonElement);
+	}
+
+	public static JsonObject migrateToJsonElement(byte[] binary) {
+		return instance.migrateToJsonElement(binary);
 	}
 
 	public static void setSkullProfile(SkullMeta meta, String texture) {

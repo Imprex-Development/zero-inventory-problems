@@ -1,9 +1,11 @@
 package net.imprex.zip.nms.v1_19_R2;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,15 +14,31 @@ import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 
+import net.imprex.zip.common.BPKey;
 import net.imprex.zip.common.ReflectionUtil;
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.nms.api.NmsManager;
+import net.minecraft.SharedConstants;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
 
 public class ZipNmsManager implements NmsManager {
 
@@ -28,50 +46,161 @@ public class ZipNmsManager implements NmsManager {
 	private static final Method CRAFTMETASKULL_SET_PROFILE = ReflectionUtil.getMethod(CRAFTMETASKULL_CLASS,
 			"setProfile", GameProfile.class);
 
-	public byte[] nbtToBinary(CompoundTag compound) {
-		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-			NbtIo.writeCompressed(compound, outputStream);
-			return outputStream.toByteArray();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+	private static final int DATA_VERSION = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
 
-	public CompoundTag binaryToNBT(byte[] binary) {
-		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binary)) {
-			return NbtIo.readCompressed(inputStream);
-		} catch (Exception e) {
-			e.printStackTrace();
+	@SuppressWarnings("deprecation")
+	private static final RegistryAccess DEFAULT_REGISTRY = MinecraftServer.getServer().registryAccess();
+	
+	private static final DynamicOps<Tag> DYNAMIC_OPS_NBT = RegistryOps.create(NbtOps.INSTANCE, DEFAULT_REGISTRY);
+	private static final DynamicOps<JsonElement> DYNAMIC_OPS_JSON = RegistryOps.create(JsonOps.INSTANCE, DEFAULT_REGISTRY);
+
+	@Override
+	public JsonObject itemstackToJsonElement(ItemStack[] items) {
+		JsonArray jsonItems = new JsonArray();
+		for (int slot = 0; slot < items.length; slot++) {
+			ItemStack item = items[slot];
+			if (item == null || item.getType() == Material.AIR) {
+				continue;
+			}
+			net.minecraft.world.item.ItemStack minecraftItem = CraftItemStack.asNMSCopy(item);
+			
+			DataResult<JsonElement> result = net.minecraft.world.item.ItemStack.CODEC.encodeStart(DYNAMIC_OPS_JSON, minecraftItem);
+			JsonObject resultJson = result.getOrThrow(false, error -> {}).getAsJsonObject();
+			
+			resultJson.addProperty(BPKey.INVENTORY_SLOT, slot);
+			jsonItems.add(resultJson);
 		}
-		return new CompoundTag();
+		
+		JsonObject outputJson = new JsonObject();
+		outputJson.addProperty(BPKey.INVENTORY_VERSION, 2);
+		outputJson.addProperty(BPKey.INVENTORY_DATA_VERSION, DATA_VERSION);
+		outputJson.addProperty(BPKey.INVENTORY_ITEMS_SIZE, items.length);
+		outputJson.add(BPKey.INVENTORY_ITEMS, jsonItems);
+		return outputJson;
 	}
 
 	@Override
-	public byte[] itemstackToBinary(ItemStack[] items) {
-		CompoundTag inventory = new CompoundTag();
-		ListTag list = new ListTag();
-		for (ItemStack itemStack : items) {
-			net.minecraft.world.item.ItemStack craftItem = CraftItemStack.asNMSCopy(itemStack);
-			list.add(craftItem.save(new CompoundTag()));
+	public ItemStack[] jsonElementToItemStack(JsonObject json) {
+		// check if current version the same
+		if (json.get(BPKey.INVENTORY_VERSION).getAsInt() != 2) {
+			throw new IllegalStateException("Unable to convert binary to itemstack because zip version is missmatching");
 		}
-		inventory.put("i", list);
-		return nbtToBinary(inventory);
-	}
-
-	@Override
-	public List<ItemStack> binaryToItemStack(byte[] binary) {
-		CompoundTag nbt = binaryToNBT(binary);
-		List<ItemStack> items = new ArrayList<>();
-		if (nbt.contains("i", 9)) {
-			ListTag list = nbt.getList("i", 10);
-			for (Tag base : list) {
-				if (base instanceof CompoundTag) {
-					items.add(CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of((CompoundTag) base)));
+		
+		int dataVersion = json.get(BPKey.INVENTORY_DATA_VERSION).getAsInt();
+		int itemsSize = json.get(BPKey.INVENTORY_ITEMS_SIZE).getAsInt();
+		
+		// convert json into bukkit item
+		ItemStack[] items = new ItemStack[itemsSize];
+		Arrays.fill(items, new ItemStack(Material.AIR));
+		
+		List<ItemStack> duplicateSlot = null;
+		
+		JsonArray jsonItems = json.get(BPKey.INVENTORY_ITEMS).getAsJsonArray();
+		for (JsonElement item : jsonItems) {
+			Dynamic<JsonElement> dynamicItem = new Dynamic<>(JsonOps.INSTANCE, item);
+			Dynamic<JsonElement> dynamicItemFixed = DataFixers.getDataFixer()
+					.update(References.ITEM_STACK, dynamicItem, dataVersion, DATA_VERSION);
+			
+			net.minecraft.world.item.ItemStack minecraftItem = net.minecraft.world.item.ItemStack.CODEC
+					.parse(DYNAMIC_OPS_JSON, dynamicItemFixed.getValue())
+					.getOrThrow(false, error -> {});
+			
+			ItemStack bukkitItem = CraftItemStack.asCraftMirror(minecraftItem);
+			int slot = item.getAsJsonObject().get(BPKey.INVENTORY_SLOT).getAsInt();
+			
+			if (itemsSize <= slot) {
+				// something went wrong !? maybe user modified it him self
+				ZIPLogger.warn("Slot size was extended from " + itemsSize + " to " + slot + " this shoudt not happen. Do not change the slot number inside the config manuel!?");
+				
+				ItemStack[] newItems = new ItemStack[slot + 1];
+				System.arraycopy(items, 0, newItems, 0, items.length);
+				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
+				items = newItems;
+			}
+			
+			if (items[slot].getType() != Material.AIR) {
+				if (duplicateSlot == null) {
+					duplicateSlot = new ArrayList<>();
 				}
+				duplicateSlot.add(bukkitItem);
+				ZIPLogger.warn("Duplicate item found on slot " + slot + " this shoudt not happen. Do not change the slot number inside the config manuel!?");
+			} else {
+				items[slot] = bukkitItem;
 			}
 		}
+		
+		// fill existing empty slots with duplicate item
+		while (duplicateSlot != null && !duplicateSlot.isEmpty()) {
+			outher: for (Iterator<ItemStack> iterator = duplicateSlot.iterator(); iterator.hasNext();) {
+				ItemStack itemStack = (ItemStack) iterator.next();
+				
+				for (int i = 0; i < items.length; i++) {
+					if (items[i].getType() == Material.AIR) {
+						items[i] = itemStack;
+						iterator.remove();
+						break;
+					} else if (i == items.length - 1) {
+						break outher;
+					}
+				}
+			}
+
+			// extend slot limit and try again
+			if (!duplicateSlot.isEmpty()) {
+				int extendedSlots = items.length + duplicateSlot.size();
+				ItemStack[] newItems = new ItemStack[extendedSlots];
+				System.arraycopy(items, 0, newItems, 0, items.length);
+				Arrays.fill(newItems, items.length, newItems.length, new ItemStack(Material.AIR));
+				items = newItems;
+			}
+		}
+		
 		return items;
+	}
+	
+	@Override
+	public JsonObject migrateToJsonElement(byte[] binary) {
+		CompoundTag compound;
+		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(binary)) {
+			compound = NbtIo.readCompressed(inputStream);
+		} catch (IOException e) {
+			throw new IllegalStateException("Unable to parse binary to nbt", e);
+		}
+		
+		ListTag list = compound.getList("i", 10);
+
+		int currentSlot = 0;
+		
+		JsonArray jsonItems = new JsonArray();
+		for (Tag base : list) {
+			if (base instanceof CompoundTag itemTag) {
+				String itemType = itemTag.getString("id");
+				if (itemType.equals("minecraft:air")) {
+					currentSlot++;
+					continue;
+				}
+				
+				Dynamic<Tag> dynamicItem = new Dynamic<>(NbtOps.INSTANCE, itemTag);
+				net.minecraft.world.item.ItemStack minecraftItem = net.minecraft.world.item.ItemStack.CODEC
+						.parse(DYNAMIC_OPS_NBT, dynamicItem.getValue())
+						.getOrThrow(false, error -> {});
+				
+				DataResult<JsonElement> result = net.minecraft.world.item.ItemStack.CODEC.encodeStart(DYNAMIC_OPS_JSON, minecraftItem);
+				JsonObject resultJson = result.getOrThrow(false, error -> {}).getAsJsonObject();
+				
+				resultJson.addProperty(BPKey.INVENTORY_SLOT, currentSlot);
+				jsonItems.add(resultJson);
+				
+				currentSlot++;
+			}
+		}
+		
+		JsonObject json = new JsonObject();
+		json.addProperty(BPKey.INVENTORY_VERSION, 2);
+		json.addProperty(BPKey.INVENTORY_DATA_VERSION, DATA_VERSION);
+		json.addProperty(BPKey.INVENTORY_ITEMS_SIZE, list.size());
+		json.add(BPKey.INVENTORY_ITEMS, jsonItems);
+		return json;
 	}
 
 	@Override

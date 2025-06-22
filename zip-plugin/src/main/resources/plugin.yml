@@ -31,6 +31,6 @@ permissions:
   zeroinventoryproblems.type:
     default: op
     description: A list of all backpack types
-  zeroinventoryproblems.lore:
+  zeroinventoryproblems.migrate:
     default: op
-    description: Change the lore of your current backpack
+    description: Migrate all existing backpacks to the new format

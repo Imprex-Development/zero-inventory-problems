@@ -16,4 +16,6 @@ public interface ZIPHandler {
 	ZIPBackpackType getBackpackType(ItemStack item);
 
 	boolean isBackpack(ItemStack item);
+	
+	ZIPUniqueId getUniqueId(ItemStack item);
 }

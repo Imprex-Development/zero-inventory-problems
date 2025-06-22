@@ -3,6 +3,9 @@ package net.imprex.zip;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,16 +20,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import com.google.common.io.ByteStreams;
+import com.google.gson.JsonObject;
 
-import io.netty.buffer.Unpooled;
 import net.imprex.zip.api.ZIPBackpack;
 import net.imprex.zip.api.ZIPBackpackType;
 import net.imprex.zip.api.ZIPHandler;
 import net.imprex.zip.api.ZIPUniqueId;
-import net.imprex.zip.common.Ingrim4Buffer;
 import net.imprex.zip.common.UniqueId;
-import net.imprex.zip.util.ZIPLogger;
+import net.imprex.zip.common.ZIPLogger;
 
 public class BackpackHandler implements ZIPHandler {
 
@@ -65,17 +66,25 @@ public class BackpackHandler implements ZIPHandler {
 	}
 
 	private Backpack loadBackpack(UniqueId id) {
-		Path file = this.folderPath.resolve(id.toString());
+		Path file = this.getPathForId(id);
 		
 		if (!Files.isRegularFile(file)) {
-			return null;
+			// migrate backpack to json
+			if (!BackpackMigrator.migrate(this.folderPath, id)) {
+				return null;
+			}
+			
+			// backpack was successful migrated
 		}
 
-		try (FileInputStream inputStream = new FileInputStream(file.toFile())) {
-			byte[] data = ByteStreams.toByteArray(inputStream);
-			Ingrim4Buffer buffer = new Ingrim4Buffer(Unpooled.wrappedBuffer(data));
-
-			Backpack backpack = new Backpack(this.plugin, id, buffer);
+		try {
+			JsonObject json;
+			try (FileInputStream inputStream = new FileInputStream(file.toFile());
+					InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+				json = Backpack.GSON.fromJson(inputStreamReader, JsonObject.class);
+			}
+			
+			Backpack backpack = new Backpack(this.plugin, id, json);
 			return backpack;
 		} catch (Exception e) {
 			ZIPLogger.error("Unable to load backpack for id '" + file.getFileName().toString() + "'", e);
@@ -92,15 +101,14 @@ public class BackpackHandler implements ZIPHandler {
 				e.printStackTrace();
 			}
 		}
+		
+		JsonObject json = new JsonObject();
+		((Backpack) backpack).save(json);
 
-		Path file = this.folderPath.resolve(backpack.getId().toString());
-		try (FileOutputStream outputStream = new FileOutputStream(file.toFile())) {
-			Ingrim4Buffer buffer = new Ingrim4Buffer(Unpooled.buffer());
-			((Backpack) backpack).save(buffer);
-
-			byte[] bytes = new byte[buffer.readableBytes()];
-			buffer.readBytes(bytes);
-			outputStream.write(bytes);
+		Path file = this.getPathForId(backpack.getId());
+		try (FileOutputStream outputStream = new FileOutputStream(file.toFile());
+				OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
+			Backpack.GSON.toJson(json, outputStreamWriter);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -154,7 +162,7 @@ public class BackpackHandler implements ZIPHandler {
 				}
 			}
 			
-			if (dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
+			if (!this.loadingIssue.contains(uniqueId) && dataContainer.has(this.backpackIdentifierKey, PersistentDataType.STRING)) {
 				String backpackIdentifier = dataContainer.get(this.backpackIdentifierKey, PersistentDataType.STRING);
 				BackpackType backpackType = this.registry.getTypeByName(backpackIdentifier);
 				if (backpackType == null) {
@@ -200,5 +208,24 @@ public class BackpackHandler implements ZIPHandler {
 		}
 
 		return false;
+	}
+	
+	@Override
+	public UniqueId getUniqueId(ItemStack item) {
+		if (item != null && item.hasItemMeta()) {
+			ItemMeta meta = item.getItemMeta();
+			PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+			if (dataContainer.has(this.backpackStorageKey, PersistentDataType.BYTE_ARRAY)) {
+				byte[] storageKey = dataContainer.get(this.backpackStorageKey, PersistentDataType.BYTE_ARRAY);
+				return UniqueId.fromByteArray(storageKey);
+			}
+		}
+
+		return null;
+	}
+	
+	private Path getPathForId(ZIPUniqueId id) {
+		return this.folderPath.resolve(id.toString() + ".json");
 	}
 }

@@ -13,13 +13,18 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import net.imprex.zip.api.ZIPBackpack;
-import net.imprex.zip.common.Ingrim4Buffer;
+import net.imprex.zip.common.BPKey;
 import net.imprex.zip.common.UniqueId;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
 
 public class Backpack implements ZIPBackpack {
+	
+	static final Gson GSON = new Gson();
 
 	private final BackpackHandler backpackHandler;
 	private final MessageConfig messageConfig;
@@ -55,7 +60,7 @@ public class Backpack implements ZIPBackpack {
 		this.save();
 	}
 
-	public Backpack(BackpackPlugin plugin, UniqueId id, Ingrim4Buffer buffer) {
+	public Backpack(BackpackPlugin plugin, UniqueId id, JsonObject json) {
 		this.backpackHandler = plugin.getBackpackHandler();
 		this.messageConfig = plugin.getBackpackConfig().message();
 		this.identifierKey = plugin.getBackpackIdentifierKey();
@@ -65,14 +70,15 @@ public class Backpack implements ZIPBackpack {
 		 * Load backpack id from buffer but don't use it!
 		 * Just for later migration to SQL
 		 */
-		buffer.readByteArray();
+		
+		
 		this.id = id;
 
-		this.typeRaw = buffer.readString();
+		this.typeRaw = json.get(BPKey.TYPE_RAW).getAsString();
 		this.type = plugin.getBackpackRegistry().getTypeByName(this.typeRaw);
 
-		byte[] contentAsByteArray = buffer.readByteArray();
-		ItemStack[] content = NmsInstance.binaryToItemStack(contentAsByteArray).toArray(ItemStack[]::new);
+		JsonObject contentAsJson = json.getAsJsonObject(BPKey.INVENTORY);
+		ItemStack[] content = NmsInstance.jsonElementToItemStack(contentAsJson);
 		this.content = content;
 
 		if (this.type != null) {
@@ -98,7 +104,7 @@ public class Backpack implements ZIPBackpack {
 		this.backpackHandler.registerBackpack(this);
 	}
 
-	public void save(Ingrim4Buffer buffer) {
+	public void save(JsonObject json) {
 		if (this.inventory != null) {
 			for (int i = 0; i < this.inventory.getSize(); i++) {
 				this.content[i] = this.inventory.getItem(i);
@@ -107,9 +113,10 @@ public class Backpack implements ZIPBackpack {
 			throw new NullPointerException("content can not be null");
 		}
 
-		buffer.writeByteArray(this.id.toByteArray());
-		buffer.writeString(this.typeRaw);
-		buffer.writeByteArray(NmsInstance.itemstackToBinary(this.content));
+		json.addProperty(BPKey.VERSION, 2);
+		json.addProperty(BPKey.ID, this.id.toString());
+		json.addProperty(BPKey.TYPE_RAW, this.typeRaw);
+		json.add(BPKey.INVENTORY, NmsInstance.itemstackToJsonElement(this.content));
 	}
 
 	@Override
@@ -203,6 +210,8 @@ public class Backpack implements ZIPBackpack {
 				this.content[i] = null;
 			}
 		}
+		
+		this.save();
 		return empty;
 	}
 

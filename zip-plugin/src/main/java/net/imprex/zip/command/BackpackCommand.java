@@ -34,6 +34,7 @@ public class BackpackCommand implements CommandExecutor, TabCompleter {
 		this.registerSubCommand(new PickupCommand(plugin));
 		this.registerSubCommand(new TypeCommand(plugin));
 		this.registerSubCommand(new LoreCommand(plugin));
+		this.registerSubCommand(new MigrateCommand(plugin));
 
 		this.buildHelpMessage();
 	}

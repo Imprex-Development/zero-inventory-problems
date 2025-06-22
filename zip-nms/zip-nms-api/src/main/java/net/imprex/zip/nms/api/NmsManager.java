@@ -1,16 +1,18 @@
 package net.imprex.zip.nms.api;
 
-import java.util.List;
-
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.google.gson.JsonObject;
+
 public interface NmsManager {
 
-	byte[] itemstackToBinary(ItemStack[] items);
+	JsonObject itemstackToJsonElement(ItemStack[] items);
 
-	List<ItemStack> binaryToItemStack(byte[] binary);
+	ItemStack[] jsonElementToItemStack(JsonObject jsonElement);
+	
+	JsonObject migrateToJsonElement(byte[] binary);
 
 	void setSkullProfile(SkullMeta meta, String texture);
 

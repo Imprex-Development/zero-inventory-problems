@@ -15,6 +15,7 @@ public enum MessageKey {
 	CommandHelpGive("commandHelpGive", "§8/§7zip §egive §7[§etype§7] §7<§eplayer§7> §8| §7Give yourself a backpack§8."),
 	CommandHelpType("commandHelpType", "§8/§7zip §etype §8| §7Get a list of all backpacks§8."),
 	CommandHelpLore("commandHelpLore", "§8/§7zip §elore §8| §7Write a custom lore§8."),
+	CommandHelpMigrate("commandHelpMigrate", "§8/§7zip §emigrate §8| §7Migrate all existing backpacks to the new format§8."),
 	CommandHelpEnd("commandHelpEnd", "§8[]§7========== §eZeroInventoryProblems §7==========§8[]"),
 	CommandTypeStart("commandTypeStart", "§8[]§7========== §eZeroInventoryProblems Types §7==========§8[]"),
 	CommandTypeContent("commandTypeContent", "  §8-§e{0}"),
@@ -60,7 +61,12 @@ public enum MessageKey {
 	LoreLineChange("loreLineChange", "The lore line {0} was changed"),
 	LoreLineDelete("loreLineDelete", "The lore line {0} was deleted"),
 	MaxLoreCountReached("maxLoreCountReached", "You have reached the max lore count of {0}"),
-	UnableToLoadBackpack("unableToLoadBackpack", "Backpack can't be loaded!");
+	UnableToLoadBackpack("unableToLoadBackpack", "Backpack id §8\"§e{0}§8\" §7can't be loaded!"),
+	CommandMigrateUsage("commandMigrateUsage", "Use: §8/§7zip migrate §econfirm"),
+	CommandMigrateOperationStartet("commandMigrateOperationStartet", "Starting migrating process, this coudt freeze the server for a moment"),
+	CommandMigrateOperationFound("commandMigrateOperationFound", "Migration found §e{0} §7outdated backpacks. Starting converting..."),
+	CommandMigrateOperationDone("commandMigrateOperationDone", "Migration finished. §e{0}§8/§e{1} §7backpacks migrated and §e{2} §7failed to migrate in §e{3} §7seconds."),
+	CommandMigrateOperationFailed("commandMigrateOperationFailed", "Migration failed. Look inside the console for more info");
 
 	public static MessageKey findByKey(String key) {
 		for (MessageKey messageKey : values()) {

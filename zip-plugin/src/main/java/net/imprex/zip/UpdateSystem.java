@@ -14,10 +14,10 @@ import org.bukkit.entity.Player;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.config.GeneralConfig;
 import net.imprex.zip.config.MessageConfig;
 import net.imprex.zip.config.MessageKey;
-import net.imprex.zip.util.ZIPLogger;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;

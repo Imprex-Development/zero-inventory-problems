@@ -1,4 +1,4 @@
-package net.imprex.zip.util;
+package net.imprex.zip.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
