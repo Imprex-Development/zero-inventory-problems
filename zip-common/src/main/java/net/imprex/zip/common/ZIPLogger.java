@@ -16,6 +16,10 @@ public class ZIPLogger {
 		ZIPLogger.verbose = verbose;
 	}
 
+	public static void log(Level level, String message) {
+		ZIPLogger.logger.log(level, LOG_PREFIX + message);
+	}
+
 	public static void debug(String message) {
 		if (ZIPLogger.verbose) {
 			ZIPLogger.logger.log(Level.FINE, LOG_DEBUG_PREFIX + message);
@@ -28,6 +32,10 @@ public class ZIPLogger {
 
 	public static void warn(String message) {
 		ZIPLogger.logger.log(Level.WARNING, LOG_PREFIX + message);
+	}
+
+	public static void warn(String message, Throwable throwable) {
+		ZIPLogger.logger.log(Level.WARNING, LOG_PREFIX + message, throwable);
 	}
 
 	public static void error(String message, Throwable throwable) {
