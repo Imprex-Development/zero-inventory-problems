@@ -67,7 +67,7 @@ public class ZipNmsManager implements NmsManager {
 		if (setResolvableProfileMethod != null) {
 			setProfile = (meta, profile) -> {
 				try {
-					setResolvableProfileMethod.invoke(meta, new ResolvableProfile(profile));
+					setResolvableProfileMethod.invoke(meta, ResolvableProfile.createResolved(profile));
 				} catch (IllegalAccessException | InvocationTargetException e) {
 					e.printStackTrace();
 				}
@@ -193,7 +193,7 @@ public class ZipNmsManager implements NmsManager {
 	public void setSkullProfile(SkullMeta meta, String texture) {
 		try {
 			GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
-			gameProfile.getProperties().put("textures", new Property("textures", texture));
+			gameProfile.properties().put("textures", new Property("textures", texture));
 
 			SET_PROFILE.accept(meta, gameProfile);
 		} catch (Exception e) {
