@@ -7,7 +7,7 @@
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>zip-nms-v1_21_R5</artifactId>
+	<artifactId>zip-nms-v1_21_R6</artifactId>
 
 	<dependencies>
 		<dependency>
