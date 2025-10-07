@@ -119,5 +119,11 @@
 			<version>${revision}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.imprex</groupId>
+			<artifactId>zip-nms-v1_21_R6</artifactId>
+			<version>${revision}</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>
