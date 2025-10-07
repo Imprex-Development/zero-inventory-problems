@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -14,11 +15,13 @@ import org.bukkit.craftbukkit.v1_21_R6.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import com.google.common.collect.Multimaps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -192,8 +195,11 @@ public class ZipNmsManager implements NmsManager {
 	@Override
 	public void setSkullProfile(SkullMeta meta, String texture) {
 		try {
-			GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "");
-			gameProfile.properties().put("textures", new Property("textures", texture));
+			HashMap<String, Property> properties = new HashMap<>();
+			properties.put("textures", new Property("textures", texture));
+			
+			PropertyMap propertyMap = new PropertyMap(Multimaps.forMap(properties));
+			GameProfile gameProfile = new GameProfile(UUID.randomUUID(), "", propertyMap);
 
 			SET_PROFILE.accept(meta, gameProfile);
 		} catch (Exception e) {
