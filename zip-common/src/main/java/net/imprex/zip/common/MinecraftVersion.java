@@ -18,7 +18,8 @@ public final class MinecraftVersion {
 		private static final List<NmsMapping> MAPPINGS = new ArrayList<>();
 
 		static {
-			MAPPINGS.add(new NmsMapping("1.21.9", "v1_21_R6"));
+			MAPPINGS.add(new NmsMapping("1.21.11", "v1_21_R7"));
+			MAPPINGS.add(new NmsMapping("1.21.10", "v1_21_R6"));
 			MAPPINGS.add(new NmsMapping("1.21.6", "v1_21_R5"));
 			MAPPINGS.add(new NmsMapping("1.21.5", "v1_21_R4"));
 			MAPPINGS.add(new NmsMapping("1.21.4", "v1_21_R3"));
