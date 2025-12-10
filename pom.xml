@@ -26,6 +26,7 @@
 
 		<plugin.compile.version>3.10.1</plugin.compile.version>
 		<plugin.shade.version>3.4.0</plugin.shade.version>
+		<plugin.jar.version>3.4.2</plugin.jar.version>
 		<plugin.flatten.version>1.2.7</plugin.flatten.version>
 		<plugin.specialsource.version>2.0.2</plugin.specialsource.version>
 
@@ -51,14 +52,6 @@
 			</resource>
 		</resources>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>${plugin.compile.version}</version>
-				<configuration>
-					<release>17</release>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -88,6 +81,26 @@
 							</excludes>
 						</filter>
 					</filters>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${plugin.jar.version}</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<paperweight-mappings-namespace>mojang</paperweight-mappings-namespace>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${plugin.compile.version}</version>
+				<configuration>
+					<release>17</release>
 				</configuration>
 			</plugin>
 			<plugin>

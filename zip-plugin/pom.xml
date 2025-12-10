@@ -131,5 +131,12 @@
 			<version>${revision}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.imprex</groupId>
+			<artifactId>zip-nms-v1_21_R7</artifactId>
+			<version>${revision}</version>
+      		<classifier>mojang-mapped</classifier>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>

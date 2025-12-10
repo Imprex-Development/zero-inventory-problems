@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_21_R7.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
@@ -57,6 +57,9 @@ public class ZipNmsManager implements NmsManager {
 	
 	private static final BiConsumer<SkullMeta, GameProfile> SET_PROFILE;
 
+	private static final Method CRAFT_ITEM_STACK_AS_NMS_COPY;
+	private static final Method CRAFT_ITEM_STACK_AS_CRAFT_MIRROR;
+
 	static {
 		BiConsumer<SkullMeta, GameProfile> setProfile = (meta, profile) -> {
 			throw new NullPointerException("Unable to find 'setProfile' method!");
@@ -89,6 +92,49 @@ public class ZipNmsManager implements NmsManager {
 		}
 
 		SET_PROFILE = setProfile;
+		
+		String craftItemStackClass = Bukkit.getServer().getClass().getPackageName() + ".inventory.CraftItemStack";
+		// CraftItemStack.asNMSCopy(item)
+		try {
+			Class<?> craftItemStack = Class.forName(craftItemStackClass);
+			Method method = ReflectionUtil.searchMethod(
+					craftItemStack,
+					net.minecraft.world.item.ItemStack.class,
+					ItemStack.class);
+			method.setAccessible(true);
+			CRAFT_ITEM_STACK_AS_NMS_COPY = method;
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
+		
+		// CraftItemStack.asCraftMirror(item)
+		try {
+			Class<?> craftItemStack = Class.forName(craftItemStackClass);
+			Method method = ReflectionUtil.searchMethod(
+					craftItemStack,
+					craftItemStack,
+					net.minecraft.world.item.ItemStack.class);
+			method.setAccessible(true);
+			CRAFT_ITEM_STACK_AS_CRAFT_MIRROR = method;
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	private static net.minecraft.world.item.ItemStack asNmsCopy(ItemStack item) {
+		try {
+			return (net.minecraft.world.item.ItemStack) CRAFT_ITEM_STACK_AS_NMS_COPY.invoke(null, item);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	private static ItemStack asCraftMirror(net.minecraft.world.item.ItemStack item) {
+		try {
+			return (ItemStack) CRAFT_ITEM_STACK_AS_CRAFT_MIRROR.invoke(null, item);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
@@ -99,7 +145,7 @@ public class ZipNmsManager implements NmsManager {
 			if (item == null || item.getType() == Material.AIR) {
 				continue;
 			}
-			net.minecraft.world.item.ItemStack minecraftItem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.world.item.ItemStack minecraftItem = asNmsCopy(item);
 			
 			DataResult<JsonElement> result = net.minecraft.world.item.ItemStack.CODEC.encodeStart(DYNAMIC_OPS_JSON, minecraftItem);
 			JsonObject resultJson = result.getOrThrow().getAsJsonObject();
@@ -138,7 +184,7 @@ public class ZipNmsManager implements NmsManager {
 					.parse(DYNAMIC_OPS_JSON, dynamicItemFixed.getValue())
 					.getOrThrow();
 			
-			ItemStack bukkitItem = CraftItemStack.asCraftMirror(minecraftItem);
+			ItemStack bukkitItem = asCraftMirror(minecraftItem);
 			int slot = item.getAsJsonObject().get(BPConstants.KEY_INVENTORY_SLOT).getAsInt();
 			
 			items.add(new ItemStackWithSlot(slot, bukkitItem));

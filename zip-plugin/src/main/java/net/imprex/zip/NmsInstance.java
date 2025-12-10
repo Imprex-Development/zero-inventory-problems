@@ -10,20 +10,26 @@ import org.bukkit.inventory.meta.SkullMeta;
 import com.google.gson.JsonObject;
 
 import net.imprex.zip.common.MinecraftVersion;
+import net.imprex.zip.common.ServerVersion;
 import net.imprex.zip.common.ZIPLogger;
 import net.imprex.zip.nms.api.ItemStackContainerResult;
 import net.imprex.zip.nms.api.NmsManager;
 
 public class NmsInstance {
-
+	
 	private static NmsManager instance;
 
 	public static void initialize() {
+
 		if (NmsInstance.instance != null) {
 			throw new IllegalStateException("NMS adapter is already initialized!");
 		}
 
 		String nmsVersion = MinecraftVersion.nmsVersion();
+		if (ServerVersion.isMojangMapped()) {
+			nmsVersion += "_mojang";
+		}
+		
 		ZIPLogger.info("Searching NMS adapter for server version \"" + nmsVersion + "\"!");
 
 		try {
