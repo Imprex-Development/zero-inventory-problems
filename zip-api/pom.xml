@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imprex</groupId>
+		<groupId>dev.imprex</groupId>
 		<artifactId>zip</artifactId>
 		<version>${revision}</version>
 	</parent>

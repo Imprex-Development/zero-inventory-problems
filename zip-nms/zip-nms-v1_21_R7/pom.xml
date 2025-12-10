@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imprex</groupId>
+		<groupId>dev.imprex</groupId>
 		<artifactId>zip-nms</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -11,7 +11,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.imprex</groupId>
+			<groupId>dev.imprex</groupId>
 			<artifactId>zip-nms-api</artifactId>
 			<version>${revision}</version>
 			<scope>provided</scope>
@@ -35,8 +35,8 @@
 					<shadedClassifierName>mojang-mapped</shadedClassifierName>
 					<relocations>
 						<relocation>
-							<pattern>net.imprex.zip.nms.v1_21_R7</pattern>
-							<shadedPattern>net.imprex.zip.nms.v1_21_R7_mojang</shadedPattern>
+							<pattern>dev.imprex.zip.nms.v1_21_R7</pattern>
+							<shadedPattern>dev.imprex.zip.nms.v1_21_R7_mojang</shadedPattern>
 						</relocation>
 					</relocations>
 				</configuration>
