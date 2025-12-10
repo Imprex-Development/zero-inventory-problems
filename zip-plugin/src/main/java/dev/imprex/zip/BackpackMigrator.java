@@ -41,6 +41,11 @@ public class BackpackMigrator {
 		int statisticFailed = 0;
 	
 		ZIPLogger.info("Checking for migration data...");
+		
+		if (Files.notExists(folderPath)) {
+			ZIPLogger.info("No migrations found.");
+			return;
+		}
 
 		try (Stream<Path> stream = Files.walk(folderPath, 1)) {
 			Path[] paths = stream
