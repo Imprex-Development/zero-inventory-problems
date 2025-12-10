@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imprex</groupId>
+		<groupId>dev.imprex</groupId>
 		<artifactId>zip-nms</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -12,7 +12,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>net.imprex</groupId>
+			<groupId>dev.imprex</groupId>
 			<artifactId>zip-nms-api</artifactId>
 			<version>${revision}</version>
 			<scope>provided</scope>
@@ -28,6 +28,20 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<configuration>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
+					<shadedClassifierName>mojang-mapped</shadedClassifierName>
+					<relocations>
+						<relocation>
+							<pattern>dev.imprex.zip.nms.v1_19_R2</pattern>
+							<shadedPattern>dev.imprex.zip.nms.v1_19_R2_mojang</shadedPattern>
+						</relocation>
+					</relocations>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>net.md-5</groupId>
 				<artifactId>specialsource-maven-plugin</artifactId>

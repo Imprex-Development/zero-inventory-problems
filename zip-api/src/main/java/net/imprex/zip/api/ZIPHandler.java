@@ -1,4 +1,4 @@
-package net.imprex.zip.api;
+package dev.imprex.zip.api;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;

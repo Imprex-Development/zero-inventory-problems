@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>net.imprex</groupId>
+		<groupId>dev.imprex</groupId>
 		<artifactId>zip-nms</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -18,7 +18,7 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>net.imprex</groupId>
+			<groupId>dev.imprex</groupId>
 			<artifactId>zip-common</artifactId>
 			<version>${revision}</version>
 			<scope>compile</scope>
