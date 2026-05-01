@@ -229,5 +229,11 @@
       		<classifier>mojang-mapped</classifier>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>dev.imprex</groupId>
+			<artifactId>zip-nms-v26_1</artifactId>
+			<version>${revision}</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>

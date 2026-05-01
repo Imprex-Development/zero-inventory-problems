@@ -26,7 +26,7 @@ public class NmsInstance {
 		}
 
 		String nmsVersion = MinecraftVersion.nmsVersion();
-		if (ServerVersion.isMojangMapped()) {
+		if (ServerVersion.isMojangMapped() && MinecraftVersion.isBelow("26.0.0")) {
 			nmsVersion += "_mojang";
 		}
 		
