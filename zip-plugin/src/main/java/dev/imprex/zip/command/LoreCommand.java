@@ -235,10 +235,13 @@ public class LoreCommand extends BackpackSubCommand {
 
 				String value = args[1];
 				ItemMeta meta = item.getItemMeta();
-				for (int line = 1; line < meta.getLore().size() + 1; line++) {
-					String lineAsString = String.valueOf(line);
-					if (lineAsString.startsWith(value)) {
-						result.add(lineAsString);
+				List<String> lore = meta.getLore();
+				if (lore != null) {
+					for (int line = 1; line < lore.size() + 1; line++) {
+						String lineAsString = String.valueOf(line);
+						if (lineAsString.startsWith(value)) {
+							result.add(lineAsString);
+						}
 					}
 				}
 			}
