@@ -27,5 +27,6 @@
 		<module>zip-nms-v1_21_R6</module>
 		<module>zip-nms-v1_21_R7</module>
 		<module>zip-nms-v26_1</module>
+		<module>zip-nms-v26_2</module>
 	</modules>
 </project>
