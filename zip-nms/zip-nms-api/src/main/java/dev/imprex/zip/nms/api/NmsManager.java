@@ -62,6 +62,8 @@ public abstract class NmsManager {
 			}
 			
 			return (ItemStack) craftItemStackAsCraftMirror.invoke(null, minecraftItem);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException("Unable to find a CraftItemStack mirror method for " + minecraftItem.getClass().getName(), e);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new IllegalStateException(e);
 		}
