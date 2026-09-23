@@ -24,6 +24,8 @@ import dev.imprex.zip.common.ZIPLogger;
 
 public class BackpackConfig {
 
+	private static final Pattern CONFIG_FILE_PATTERN = Pattern.compile("config-(\\d+(?:\\.\\d+){0,2})\\.yml");
+
 	private final BackpackPlugin plugin;
 
 	private GeneralConfig generalConfig;
