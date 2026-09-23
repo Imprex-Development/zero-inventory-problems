@@ -51,6 +51,12 @@ public abstract class NmsManager {
 						CRAFT_ITEM_STACK_CLASS,
 						CRAFT_ITEM_STACK_CLASS,
 						minecraftItem.getClass());
+
+				// Paper 26.3+ support
+				if (method == null) {
+					method = CRAFT_ITEM_STACK_CLASS.getMethod("asBukkitMirror", minecraftItem.getClass());
+				}
+
 				method.setAccessible(true);
 				craftItemStackAsCraftMirror = method;
 			}
