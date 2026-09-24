@@ -51,11 +51,19 @@ public abstract class NmsManager {
 						CRAFT_ITEM_STACK_CLASS,
 						CRAFT_ITEM_STACK_CLASS,
 						minecraftItem.getClass());
+
+				// Paper 26.3+ support
+				if (method == null) {
+					method = CRAFT_ITEM_STACK_CLASS.getMethod("asBukkitMirror", minecraftItem.getClass());
+				}
+
 				method.setAccessible(true);
 				craftItemStackAsCraftMirror = method;
 			}
 			
 			return (ItemStack) craftItemStackAsCraftMirror.invoke(null, minecraftItem);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException("Unable to find a CraftItemStack mirror method for " + minecraftItem.getClass().getName(), e);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new IllegalStateException(e);
 		}
