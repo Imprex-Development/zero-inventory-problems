@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.gson.JsonObject;
@@ -60,6 +61,10 @@ public class NmsInstance {
 
 	public static void setSkullProfile(SkullMeta meta, String texture) {
 		instance.setSkullProfile(meta, texture);
+	}
+
+	public static void setMaxStackSize(ItemMeta meta, int maxStackSize) {
+		instance.setMaxStackSize(meta, maxStackSize);
 	}
 
 	public static boolean isAir(Material material) {

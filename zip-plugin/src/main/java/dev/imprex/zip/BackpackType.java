@@ -29,6 +29,7 @@ public class BackpackType implements ZIPBackpackType {
 				.setDisplayName(config.displayName)
 				.setSkullProfile(config.texture)
 				.setCustomModelData(config.customModelData)
+				.setMaxStackSize(1)
 				.setPersistentDataContainer(plugin.getBackpackIdentifierKey(), PersistentDataType.STRING, config.uniqueName)
 				.setLore(config.lore)
 				.build();
