@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.gson.JsonObject;
@@ -16,13 +17,38 @@ public abstract class NmsManager {
 	
 	private static final Class<?> CRAFT_ITEM_STACK_CLASS;
 
+	private static final Method ITEM_META_SET_MAX_STACK_SIZE;
+
 	private static Method craftItemStackAsNmsCopy;
 	private static Method craftItemStackAsCraftMirror;
-	
+
 	static {
 		try {
 			CRAFT_ITEM_STACK_CLASS = Class.forName(Bukkit.getServer().getClass().getPackageName() + ".inventory.CraftItemStack");
 		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
+
+		// only available since 1.20.5, we compile against 1.19
+		Method setMaxStackSize = null;
+		try {
+			setMaxStackSize = ItemMeta.class.getMethod("setMaxStackSize", Integer.class);
+		} catch (NoSuchMethodException e) {
+		}
+		ITEM_META_SET_MAX_STACK_SIZE = setMaxStackSize;
+	}
+
+	/**
+	 * Sets the max stack size of the item. Does nothing below 1.20.5.
+	 */
+	public void setMaxStackSize(ItemMeta meta, int maxStackSize) {
+		if (ITEM_META_SET_MAX_STACK_SIZE == null) {
+			return;
+		}
+
+		try {
+			ITEM_META_SET_MAX_STACK_SIZE.invoke(meta, maxStackSize);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new IllegalStateException(e);
 		}
 	}

@@ -111,6 +111,11 @@ public class BackpackListener implements Listener {
 				&& this.backpackHandler.isBackpack(event.getItem())) {
 			event.setCancelled(true);
 
+			if (event.getItem().getAmount() > 1 && this.backpackHandler.getUniqueId(event.getItem()) == null) {
+				this.messageConfig.send(event.getPlayer(), MessageKey.StackedBackpacksCanNotBeOpened);
+				return;
+			}
+
 			Backpack backpack = this.backpackHandler.getBackpack(event.getItem());
 			if (backpack != null) {
 				backpack.open(event.getPlayer());

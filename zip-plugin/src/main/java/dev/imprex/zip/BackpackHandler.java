@@ -177,6 +177,11 @@ public class BackpackHandler implements ZIPHandler {
 					return null;
 				}
 
+				// a new id would be shared by the whole stack and link all of them
+				if (uniqueId == null && item.getAmount() > 1) {
+					return null;
+				}
+
 				Backpack backpack = uniqueId != null
 					? new Backpack(plugin, backpackType, uniqueId)
 					: backpackType.create();

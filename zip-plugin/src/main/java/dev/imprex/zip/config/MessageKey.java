@@ -55,6 +55,7 @@ public enum MessageKey {
 	BothBackpacksNeedToBeTheSameType("bothBackpacksNeedToBeTheSameType", "Both Backpacks need to be the same type"),
 	ThisBackpackIsAlreadyLinkedThoThat("thisBackpackIsAlreadyLinkedThoThat", "This backpack is already linked to that backpack"),
 	StackedBackpacksCanNotBeLinked("stackedBackpacksCanNotBeLinked", "Stacked backpacks can not be linked at the same time"),
+	StackedBackpacksCanNotBeOpened("stackedBackpacksCanNotBeOpened", "Stacked backpacks can not be opened, please split them first"),
 	PleaseEnterANumber("pleaseEnterANumber", "Please enter a number"),
 	EnterANumberBetweenArgsAndArgs("enterANumberBetweenArgsAndArgs", "Please enter a number between {0} and {1}"),
 	LoreLineCreate("loreLineCreate", "The lore line {0} was added"),

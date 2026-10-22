@@ -79,6 +79,11 @@ public class ItemFactory extends ItemStack {
 		return this;
 	}
 
+	public ItemFactory setMaxStackSize(int maxStackSize) {
+		NmsInstance.setMaxStackSize(this.meta, maxStackSize);
+		return this;
+	}
+
 	public ItemFactory setCustomModelData(Integer data) {
 		this.meta.setCustomModelData(data);
 		return this;
